@@ -1,0 +1,15 @@
+apiVersion: virtualization.deckhouse.io/v1alpha2
+kind: VirtualDisk
+metadata:
+  name: root-disk-db
+  labels:
+    app: db
+spec:
+  persistentVolumeClaim:
+    size: 4G
+    storageClassName: i-linstor-thin-r1 # linstor-thin-r2
+  dataSource:
+    type: ObjectRef
+    objectRef:
+      kind: ClusterVirtualImage
+      name: demo-alpine-3-21

@@ -1,0 +1,130 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+  - python3
+  - py3-pip
+  - curl
+users:
+  - name: cloud
+    passwd: $6$rounds=4096$vln/.aPHBOI7BMYR$bBMkqQvuGs5Gyd/1H5DP4m9HjQSy.kgrxpaGEHwkX7KEFV8BS.HZWPitAtZ2Vd8ZqIZRqmlykRCagTgPejt1i.
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    chpasswd: {expire: False}
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJPiE9aJL1IFP8fOZdBKW3HxGnhcRzKKw2jznutjZxyCPOepreu+UEDnKXa3bd+asylx6prib4J7rThm/+AKB8vCLIjP6l4tgr12V7rommXWO3NtES4fi3SbR8g+1V2ARDQ+SgMtXoFFMBmI9J2DZKX/kyo5MszgdeT3HLOeTsPw== demo
+runcmd:
+  - python3 -m venv /opt/venv
+  - /opt/venv/bin/pip install flask flask-cors psycopg2-binary gunicorn python-dotenv
+  - rc-update add flask-app default
+  - rc-service flask-app start
+write_files:
+  - path: /app/app.py
+    permissions: "0644"
+    content: |
+      from flask import Flask, request, jsonify
+      from flask_cors import CORS
+      from dotenv import load_dotenv
+      import psycopg2
+      import os
+
+      load_dotenv(dotenv_path='/app/.env')
+
+      app = Flask(__name__)
+
+      DB_HOST = os.getenv('DB_HOST', 'host')
+      DB_USER = os.getenv('DB_USER', 'user')
+      DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
+      DB_NAME = os.getenv('DB_NAME', 'db')
+
+      @app.route('/health/ready', methods=['GET'])
+      def readiness():
+          try:
+              # todo
+              # conn = psycopg2.connect(...)
+              # conn.close()
+              return jsonify({"status": "ready"}), 200
+          except Exception as e:
+              return jsonify({"status": "not ready", "error": str(e)}), 500
+
+      def get_db_connection():
+          return psycopg2.connect(
+              host=DB_HOST,
+              user=DB_USER,
+              password=DB_PASSWORD,
+              dbname=DB_NAME
+          )
+
+      @app.route('/data', methods=['GET'])
+      def get_data():
+          try:
+              conn = get_db_connection()
+              cur = conn.cursor()
+              cur.execute("SELECT id, name FROM test_table")
+              rows = cur.fetchall()
+              cur.close()
+              conn.close()
+              return jsonify([{"id": row[0], "name": row[1]} for row in rows])
+          except Exception as e:
+              return jsonify({"error": str(e)}), 500
+
+      @app.route('/data', methods=['POST'])
+      def add_data():
+          try:
+              data = request.json
+              name = data.get('name')
+              if not name:
+                  return jsonify({"error": "Name is required"}), 400
+
+              conn = get_db_connection()
+              cur = conn.cursor()
+              cur.execute("INSERT INTO test_table (name) VALUES (%s) RETURNING id", (name,))
+              new_id = cur.fetchone()[0]
+              conn.commit()
+              cur.close()
+              conn.close()
+              return jsonify({"id": new_id, "name": name}), 201
+          except Exception as e:
+              return jsonify({"error": str(e)}), 500
+
+      @app.route('/data/<int:id>', methods=['DELETE'])
+      def delete_data(id):
+          try:
+              conn = get_db_connection()
+              cur = conn.cursor()
+              cur.execute("DELETE FROM test_table WHERE id = %s", (id,))
+              conn.commit()
+              cur.close()
+              conn.close()
+              return jsonify({"message": f"Record with ID {id} deleted"})
+          except Exception as e:
+              return jsonify({"error": str(e)}), 500
+
+      if __name__ == '__main__':
+          app.run(host='0.0.0.0', port=5000)
+  - path: /etc/init.d/flask-app
+    permissions: "0755"
+    content: |
+      #!/sbin/openrc-run
+
+      description="Flask App Service with Gunicorn"
+      command="/opt/venv/bin/gunicorn"
+      command_args="--workers 4 --bind 0.0.0.0:5000 app:app --daemon"
+      pidfile="/var/run/flask-app.pid"
+      directory="/app"
+      depend() {
+          need net
+      }
+
+      start_pre() {
+          rm -f /var/run/flask-app.pid
+      }
+  - path: /app/.env
+    permissions: "0644"
+    content: |
+      export DB_HOST=db.demo-db.svc.cluster.local
+      export DB_USER=myuser
+      export DB_PASSWORD=mypassword
+      export DB_NAME=mydb
+final_message: "\U0001F525\U0001F525\U0001F525 The system is finally up, after $UPTIME seconds \U0001F525\U0001F525\U0001F525"

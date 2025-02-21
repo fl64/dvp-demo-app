@@ -1,0 +1,34 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend
+  annotations:
+    nginx.ingress.kubernetes.io/auth-signin: https://$host/dex-authenticator/sign_in
+    nginx.ingress.kubernetes.io/auth-url: https://demo-app-dex-authenticator.demo-app.svc.cluster.local/dex-authenticator/auth
+    nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-User,X-Auth-Request-Email
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: demo.pt.dvp.flant.dev
+      http:
+        paths:
+          - path: /(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 8000
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 5000
+  tls:
+    - hosts:
+        - demo.pt.dvp.flant.dev
+      secretName: frontend

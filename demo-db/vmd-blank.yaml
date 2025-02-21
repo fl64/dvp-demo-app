@@ -1,0 +1,8 @@
+apiVersion: virtualization.deckhouse.io/v1alpha2
+kind: VirtualDisk
+metadata:
+  name: blank-disk
+spec:
+  persistentVolumeClaim:
+    size: 1G
+    storageClassName: i-linstor-thin-r1

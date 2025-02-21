@@ -1,0 +1,30 @@
+apiVersion: virtualization.deckhouse.io/v1alpha2
+kind: VirtualMachine
+metadata:
+  name: frontend
+  labels:
+    vm: frontend
+    app: frontend
+spec:
+  runPolicy: AlwaysOn
+  virtualMachineClassName: generic
+  cpu:
+    cores: 1
+    coreFraction: 10%
+  memory:
+    size: 512Mi
+  provisioning:
+    type: UserDataRef
+    userDataRef:
+      kind: Secret
+      name: cloud-init-frontend
+  blockDeviceRefs:
+    - kind: VirtualDisk
+      name: root-disk-frontend
+  affinity:
+    virtualMachineAndPodAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: frontend
+          topologyKey: kubernetes.io/hostname

@@ -1,0 +1,13 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: frontend
+spec:
+  certificateOwnerRef: false
+  dnsNames:
+    - demo.pt.dvp.flant.dev
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  secretName: frontend

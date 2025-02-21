@@ -1,0 +1,30 @@
+apiVersion: virtualization.deckhouse.io/v1alpha2
+kind: VirtualMachine
+metadata:
+  name: backend
+  labels:
+    vm: backend
+    app: backend
+spec:
+  runPolicy: AlwaysOn
+  virtualMachineClassName: generic
+  cpu:
+    cores: 1
+    coreFraction: 10%
+  memory:
+    size: 512Mi
+  provisioning:
+    type: UserDataRef
+    userDataRef:
+      kind: Secret
+      name: cloud-init-backend
+  blockDeviceRefs:
+    - kind: VirtualDisk
+      name: root-disk-backend
+  affinity:
+    virtualMachineAndPodAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: backend
+          topologyKey: kubernetes.io/hostname

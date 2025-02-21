@@ -1,0 +1,51 @@
+---
+apiVersion: deckhouse.io/v1alpha2
+kind: Project
+metadata:
+  name: demo-app
+spec:
+  description: demo-app
+  projectTemplateName: default
+  parameters:
+    resourceQuota:
+      requests:
+        cpu: 20
+        memory: 20Gi
+      limits:
+        cpu: 20
+        memory: 20Gi
+    administrators:
+      - subject: Group
+        name: demo-app-admins
+---
+apiVersion: deckhouse.io/v1alpha1
+kind: Group
+metadata:
+  name: demo-app-admins
+spec:
+  members:
+    - kind: User
+      name: demo-app-admin
+  name: demo-app-admins
+---
+apiVersion: deckhouse.io/v1
+kind: User
+metadata:
+  name: demo-app-admin
+spec:
+  email: demo-app-admin@flant.com
+  # echo "demodemodemo" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0
+  password: JDJ5JDEwJEl6WmVXclZwYTBYeGFuUW1oZU5jMS52S0ZiL1RrOXFmbE55b3pvdWdUckxzaUo3Lmh4RnhXCgo=
+---
+apiVersion: deckhouse.io/v1alpha1
+kind: AuthorizationRule
+metadata:
+  name: demo-app-admin
+  namespace: demo-app
+spec:
+  accessLevel: Admin
+  allowScale: true
+  portForwarding: true
+  subjects:
+    - kind: Group
+      name: demo-app-admin

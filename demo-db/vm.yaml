@@ -1,0 +1,23 @@
+apiVersion: virtualization.deckhouse.io/v1alpha2
+kind: VirtualMachine
+metadata:
+  name: db
+  labels:
+    vm: db
+    app: db
+spec:
+  runPolicy: AlwaysOn
+  virtualMachineClassName: generic
+  cpu:
+    cores: 1
+    coreFraction: 10%
+  memory:
+    size: 2048Mi
+  provisioning:
+    type: UserDataRef
+    userDataRef:
+      kind: Secret
+      name: cloud-init
+  blockDeviceRefs:
+    - kind: VirtualDisk
+      name: root-disk-db

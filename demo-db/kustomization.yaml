@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: demo-db
+resources:
+  - ./project.yaml
+  # - ./ns.yaml
+  - ./vm.yaml
+  - ./vmd-root.yaml
+  - ./svc.yaml
+  - ./np.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+secretGenerator:
+  - name: cloud-init
+    files:
+      - userdata=cfg/cloudinit.yaml
+    type: provisioning.virtualization.deckhouse.io/cloud-init

@@ -1,0 +1,18 @@
+apiVersion: network.deckhouse.io/v1alpha1
+kind: ServiceWithHealthchecks
+metadata:
+  name: backend-hp
+  namespace: default
+spec:
+  ports:
+    - port: 5000
+      protocol: TCP
+      targetPort: 5000
+  selector:
+    app: backend
+  healthcheck:
+    probes:
+      - mode: HTTP
+        http:
+          targetPort: 5000
+          path: /health/ready
