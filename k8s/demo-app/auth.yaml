@@ -15,8 +15,7 @@ metadata:
   name: demo-user
 spec:
   email: demo-user@flant.com
-  # echo "demodemodemo" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0
-  password: JDJ5JDEwJEl6WmVXclZwYTBYeGFuUW1oZU5jMS52S0ZiL1RrOXFmbE55b3pvdWdUckxzaUo3Lmh4RnhXCgo=
+  password: JDJ5JDEwJGRVcVlQbkU3L2FBRXZWaTRjMTlmeS5ObW5FbTZhdmhveDZuNC9tT01Hem0yWHRjSFFFU0dlCgo=
 ---
 apiVersion: deckhouse.io/v1alpha1
 kind: AuthorizationRule

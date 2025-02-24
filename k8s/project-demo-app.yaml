@@ -34,18 +34,21 @@ metadata:
   name: demo-app-admin
 spec:
   email: demo-app-admin@flant.com
-  # echo "demodemodemo" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0
-  password: JDJ5JDEwJEl6WmVXclZwYTBYeGFuUW1oZU5jMS52S0ZiL1RrOXFmbE55b3pvdWdUckxzaUo3Lmh4RnhXCgo=
+  password: JDJ5JDEwJGRVcVlQbkU3L2FBRXZWaTRjMTlmeS5ObW5FbTZhdmhveDZuNC9tT01Hem0yWHRjSFFFU0dlCgo=
 ---
-apiVersion: deckhouse.io/v1alpha1
-kind: AuthorizationRule
+apiVersion: deckhouse.io/v1
+kind: ClusterAuthorizationRule
 metadata:
   name: demo-app-admin
-  namespace: demo-app
 spec:
   accessLevel: Admin
   allowScale: true
-  portForwarding: true
+  allowAccessToSystemNamespaces: false
+  portForwarding: false
   subjects:
     - kind: Group
-      name: demo-app-admin
+      name: demo-app-admins
+  namespaceSelector:
+    labelSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: demo-app

@@ -11,9 +11,6 @@ vars:
   SSH_KEYS_PATH: "{{ .TMP_PATH }}"
   SSH_PRIV_KEY_FILE: "{{ .SSH_KEYS_PATH }}/{{.SSH_KEYS_NAME}}"
   SSH_PUB_KEY_FILE: "{{ .SSH_PRIV_KEY_FILE }}.pub"
-  PASSWORD_HASH:
-    sh: |
-          echo "${PASSWORD}" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0
 
 tasks:
   init:
@@ -38,19 +35,22 @@ tasks:
       - echo "🚀 Update ssh keys"
       - grep -rwl "{{ .SSH_KEYS_NAME }}" | xargs sed -i 's|ssh-rsa [^ ]* {{ .SSH_KEYS_NAME }}|{{ .SSH_PUB_KEY }}|g'
   update-password:
+    # '$(echo -n "demo" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0)'
     cmds:
-    - echo "New password ${PASSWORD}"
-    - find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="{{.PASSWORD_HASH}}")' '{}' \;
+    - echo "🚀 Generate password hash from >>${PASSWORD}<<"
+    - |
+      find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
   update-sc:
     cmds:
       - |
           find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "VirtualDisk"); .spec.persistentVolumeClaim.storageClassName="'${STORAGE_CLASS}'")' '{}' \;
   update-fqdn:
     cmds:
+      - echo "🚀 Update FQDN"
       - |
-          yq -i '(.spec.rules[]?.host |= env(FQDN)) | (.spec.tls[].hosts[] |= env(FQDN))' ./demo-app/ingress.yaml
-          yq -i '(.spec.dnsNames[]? |= env(FQDN))' ./demo-app/cert.yaml
-          yq -i '(.spec.applicationDomain |= env(FQDN))' ./demo-app/dex.yaml
+          yq -i '(.spec.rules[]?.host |= env(FQDN)) | (.spec.tls[].hosts[] |= env(FQDN))' ./k8s/demo-app/ingress.yaml
+          yq -i '(.spec.dnsNames[]? |= env(FQDN))' ./k8s/demo-app/cert.yaml
+          yq -i '(.spec.applicationDomain |= env(FQDN))' ./k8s/demo-app/dex.yaml
   update:
     deps:
       - update-ssh
@@ -63,7 +63,11 @@ tasks:
         sh: date +%s
     cmds:
       - task: update
-      - kubectl apply -k .
+      - echo "🚀 Deploy APP"
+      - kubectl apply -f ./k8s/project-demo-app.yaml
+      - kubectl apply -f ./k8s/project-demo-db.yaml
+      - kubectl get project -o name | xargs kubectl wait --for='jsonpath={.status.state}=Deployed' --timeout=360s
+      - kubectl apply -k ./k8s
       - kubectl -n demo-db get vm -o name | xargs kubectl -n demo-db wait --for='jsonpath={.status.phase}=Running' --timeout=360s
       - kubectl -n demo-app get vm -o name | xargs kubectl -n demo-app wait --for='jsonpath={.status.phase}=Running' --timeout=360s
       - |
@@ -72,4 +76,6 @@ tasks:
         date -ud "@$difference" +'%H:%M:%S'
   undeploy:
     cmds:
-      - kubectl delete -k . || true
+      - kubectl delete -k ./k8s || true
+      - kubectl delete -f ./k8s/project-demo-app.yaml || true
+      - kubectl delete -f ./k8s/project-demo-db.yaml || true

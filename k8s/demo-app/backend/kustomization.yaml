@@ -4,8 +4,8 @@ resources:
   - ./overlays/backend-a
   - ./overlays/backend-b
   - ./svc.yaml
-  - ./svchp.yaml
-  - ./np.yaml
+  # - ./svchp.yaml
+  - ./np-backend.yaml
 generatorOptions:
   disableNameSuffixHash: true
 secretGenerator:

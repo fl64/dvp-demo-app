@@ -1,0 +1,19 @@
+apiVersion: network.deckhouse.io/v1alpha1
+kind: ServiceWithHealthchecks
+metadata:
+  name: db-hp
+spec:
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: db
+  healthcheck:
+    probes:
+      - mode: PostgreSQL
+        postgreSQL:
+          targetPort: 5432
+          dbName: mydb
+          authSecretName: cred-secret
+          query: "SELECT 1"

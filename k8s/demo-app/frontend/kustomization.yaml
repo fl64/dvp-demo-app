@@ -4,5 +4,5 @@ resources:
   - ./vm
   - ./container
   - ./svc.yaml
-  - ./svchp.yaml
-  - ./np.yaml
+  #- ./svchp.yaml
+  - ./np-frontend.yaml

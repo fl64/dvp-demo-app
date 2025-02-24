@@ -1,12 +1,12 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: backend
+  name: frontend
   namespace: demo-app
 spec:
   podSelector:
     matchLabels:
-      app: backend
+      app: frontend
   policyTypes:
     - Ingress
     - Egress
@@ -20,18 +20,25 @@ spec:
               app: controller
       ports:
         - protocol: TCP
-          port: 5000
-  egress:
-    - to:
+          port: 80
+    - from:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: demo-db
+              kubernetes.io/metadata.name: d8-service-with-healthchecks
           podSelector:
             matchLabels:
-              app: db
+              app: agent
       ports:
         - protocol: TCP
-          port: 5432
+          port: 80
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
     - to:
         - namespaceSelector:
             matchLabels:
