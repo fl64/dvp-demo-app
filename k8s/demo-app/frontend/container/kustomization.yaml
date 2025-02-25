@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - ./deploy.yaml
 generatorOptions:
-  disableNameSuffixHash: true
+  disableNameSuffixHash: false
 configMapGenerator:
   - name: frontend-config
     files:

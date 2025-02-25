@@ -17,7 +17,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4" id="header" style="color: red;">Container frontend</h1>
+        <h1 class="mb-4" id="header" style="color: %%HEADER_COLOR%%;">%%HEADER_TITLE%%</h1>
 
         <!-- Таблица данных -->
         <div class="mb-4">
@@ -100,7 +100,7 @@
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const title = params.get('title') || 'Container frontend';
+            const title = params.get('title') || '%%HEADER_TITLE%%';
             document.getElementById('header').textContent = title;
 
             fetchData(); // Загружаем данные при старте

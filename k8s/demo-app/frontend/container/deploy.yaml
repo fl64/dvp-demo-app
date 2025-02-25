@@ -13,18 +13,49 @@ spec:
       labels:
         app: frontend
     spec:
+      initContainers:
+        - name: configure-frontend
+          image: nginx:alpine
+          env:
+            - name: HEADER_TITLE
+              value: "Container frontend"
+            - name: HEADER_COLOR
+              value: "red"
+            - name: FRONT
+              value: https://raw.githubusercontent.com/fl64/dvp-demo-app/master/k8s/demo-app/frontend/container/cfg/index.html
+          command:
+            - sh
+            - -c
+            - "curl ${FRONT} | sed \"s|%%HEADER_TITLE%%|${HEADER_TITLE}|g\" > /usr/share/nginx/html/index.html && sed -i \"s|%%HEADER_COLOR%%|${HEADER_COLOR}|g\" /usr/share/nginx/html/index.html"
+          volumeMounts:
+            - name: frontend-config-volume
+              mountPath: /config
+            - name: nginx-html-volume
+              mountPath: /usr/share/nginx/html
+          resources:
+            limits:
+              cpu: 100m
+              memory: 150Mi
+            requests:
+              cpu: 10m
+              memory: 50Mi
       containers:
         - name: nginx
+          env:
+            - name: HEADER_TITLE
+              value: "Custom Frontend Title"
+            - name: HEADER_COLOR
+              value: "red"
           image: nginx:alpine
           ports:
             - containerPort: 80
           volumeMounts:
-            - name: frontend-config-volume
+            - name: nginx-html-volume
               mountPath: /usr/share/nginx/html
           resources:
             limits:
-              cpu: 10m
-              memory: 50Mi
+              cpu: 100m
+              memory: 150Mi
             requests:
               cpu: 10m
               memory: 50Mi
@@ -35,3 +66,5 @@ spec:
             items:
               - key: index.html
                 path: index.html # Монтируем index.html из ConfigMap
+        - name: nginx-html-volume
+          emptyDir: {}

@@ -15,7 +15,7 @@ metadata:
   name: demo-user
 spec:
   email: demo-user@flant.com
-  password: JDJ5JDEwJGRVcVlQbkU3L2FBRXZWaTRjMTlmeS5ObW5FbTZhdmhveDZuNC9tT01Hem0yWHRjSFFFU0dlCgo=
+  password: JDJ5JDEwJHVDeklIVEVNVkV2UE00bGxLdUozdXV6WVRtWjllaTZNRjNzdU9mOXJENVd5bTY0dlk4Z3FxCgo=
 ---
 apiVersion: deckhouse.io/v1alpha1
 kind: AuthorizationRule
