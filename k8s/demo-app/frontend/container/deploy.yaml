@@ -28,8 +28,6 @@ spec:
             - -c
             - "curl ${FRONT} | sed \"s|%%HEADER_TITLE%%|${HEADER_TITLE}|g\" > /usr/share/nginx/html/index.html && sed -i \"s|%%HEADER_COLOR%%|${HEADER_COLOR}|g\" /usr/share/nginx/html/index.html"
           volumeMounts:
-            - name: frontend-config-volume
-              mountPath: /config
             - name: nginx-html-volume
               mountPath: /usr/share/nginx/html
           resources:
@@ -60,11 +58,5 @@ spec:
               cpu: 10m
               memory: 50Mi
       volumes:
-        - name: frontend-config-volume
-          configMap:
-            name: frontend-config # Имя ConfigMap
-            items:
-              - key: index.html
-                path: index.html # Монтируем index.html из ConfigMap
         - name: nginx-html-volume
           emptyDir: {}
