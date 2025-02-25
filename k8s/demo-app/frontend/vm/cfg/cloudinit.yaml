@@ -12,6 +12,7 @@ users:
     lock_passwd: false
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJPiE9aJL1IFP8fOZdBKW3HxGnhcRzKKw2jznutjZxyCPOepreu+UEDnKXa3bd+asylx6prib4J7rThm/+AKB8vCLIjP6l4tgr12V7rommXWO3NtES4fi3SbR8g+1V2ARDQ+SgMtXoFFMBmI9J2DZKX/kyo5MszgdeT3HLOeTsPw== demo
+write_files:
   - path: /etc/nginx/http.d/default.conf
     permissions: "0644"
     content: |
@@ -31,11 +32,12 @@ users:
               add_header Cache-Control "public";
           }
       }
+
 runcmd:
   - mkdir /var/www/frontend/
-  - curl https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/frontend/index.html > /var/www/frontend/index.html
+  - curl -sq https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/frontend/index.html > /var/www/frontend/index.html
   - sed -i "s|%%HEADER_TITLE%%|VM Frontend|g" /var/www/frontend/index.html
-  - sed -i "s|%%HEADER_COLOR%%|blue|g" /var/www/frontend/index.html"
+  - sed -i "s|%%HEADER_COLOR%%|blue|g" /var/www/frontend/index.html
   - rc-update add nginx default
   - rc-service nginx start
 final_message: "\U0001F525\U0001F525\U0001F525 The system is finally up, after $UPTIME seconds \U0001F525\U0001F525\U0001F525"
