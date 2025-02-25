@@ -22,7 +22,7 @@ spec:
             - name: HEADER_COLOR
               value: "red"
             - name: FRONT
-              value: https://raw.githubusercontent.com/fl64/dvp-demo-app/master/k8s/demo-app/frontend/container/cfg/index.html
+              value: https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/frontend/index.html
           command:
             - sh
             - -c
