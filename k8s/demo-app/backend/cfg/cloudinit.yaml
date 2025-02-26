@@ -16,11 +16,12 @@ users:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJPiE9aJL1IFP8fOZdBKW3HxGnhcRzKKw2jznutjZxyCPOepreu+UEDnKXa3bd+asylx6prib4J7rThm/+AKB8vCLIjP6l4tgr12V7rommXWO3NtES4fi3SbR8g+1V2ARDQ+SgMtXoFFMBmI9J2DZKX/kyo5MszgdeT3HLOeTsPw== demo
 runcmd:
   - python3 -m venv /opt/venv
-  - /opt/venv/bin/pip install flask flask-cors psycopg2-binary gunicorn python-dotenv
+  - /opt/venv/bin/pip install -r https://raw.githubusercontent.com/fl64/dvp-demo-app/refs/heads/master/apps/backend/requirements.txt
   - mkdir /app
   - curl https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/backend/app.py > /app/app.py
   - rc-update add flask-app default
   - rc-service flask-app start
+  - curl -L https://github.com/pouriyajamshidi/tcping/releases/download/v2.7.1/tcping-linux-amd64-static.tar.gz  | tar -xz -C /usr/local/bin/ tcping
 write_files:
   - path: /etc/init.d/flask-app
     permissions: "0755"
