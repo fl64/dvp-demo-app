@@ -32,7 +32,6 @@ write_files:
               add_header Cache-Control "public";
           }
       }
-
 runcmd:
   - mkdir /var/www/frontend/
   - curl -sq https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/frontend/index.html > /var/www/frontend/index.html
