@@ -3,9 +3,8 @@ apiVersion: virtualization.deckhouse.io/v1alpha2
 kind: ClusterVirtualImage
 metadata:
   name: demo-alpine-3-21
-  namespace: default
 spec:
   dataSource:
     type: ContainerImage
     containerImage:
-      image: docker.io/fl64/alpine-3-21-bios-base:latest
+      image: registry-dvp.dev.flant.dev/e2e/alpine/alpine-3-21-bios-base

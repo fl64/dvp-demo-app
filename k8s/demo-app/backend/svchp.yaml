@@ -2,7 +2,6 @@ apiVersion: network.deckhouse.io/v1alpha1
 kind: ServiceWithHealthchecks
 metadata:
   name: backend
-  namespace: default
 spec:
   ports:
     - port: 5000
