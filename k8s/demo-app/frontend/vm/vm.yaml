@@ -13,6 +13,8 @@ spec:
     coreFraction: 10%
   memory:
     size: 512Mi
+  disruptions:
+    restartApprovalMode: Automatic
   provisioning:
     type: UserDataRef
     userDataRef:
