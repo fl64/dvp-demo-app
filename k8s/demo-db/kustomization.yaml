@@ -8,6 +8,7 @@ resources:
   - ./svc.yaml
   - ./svchp.yaml
   - ./np-db.yaml
+  - ./np-ssh.yaml
 generatorOptions:
   disableNameSuffixHash: true
 secretGenerator:

@@ -1,0 +1,23 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: d8-ssh-access
+spec:
+  podSelector:
+    matchExpressions:
+      - key: vm
+        operator: Exists
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: d8-virtualization
+          podSelector:
+            matchLabels:
+              kubevirt.internal.virtualization.deckhouse.io: virt-api
+      ports:
+        - protocol: TCP
+          port: 22

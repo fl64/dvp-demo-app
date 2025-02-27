@@ -79,3 +79,6 @@ tasks:
       - kubectl delete -k ./k8s || true
       - kubectl delete -f ./k8s/project-demo-app.yaml || true
       - kubectl delete -f ./k8s/project-demo-db.yaml || true
+  uptime:
+    cmds:
+      - ansible -m shell -a "uptime" -i inventory.yaml all
