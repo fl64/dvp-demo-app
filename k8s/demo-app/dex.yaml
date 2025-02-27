@@ -7,7 +7,7 @@ spec:
   sendAuthorizationHeader: false
   applicationIngressCertificateSecretName: "frontend"
   applicationIngressClassName: "nginx"
-  keepUsersLoggedInFor: "720h"
+  keepUsersLoggedInFor: "5m"
   allowedGroups:
     - demo-users
     # whitelistSourceRanges:
