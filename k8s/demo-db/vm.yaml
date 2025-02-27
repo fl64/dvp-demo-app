@@ -7,6 +7,7 @@ metadata:
     app: db
 spec:
   runPolicy: AlwaysOn
+  bootloader: EFI
   virtualMachineClassName: generic
   cpu:
     cores: 1
