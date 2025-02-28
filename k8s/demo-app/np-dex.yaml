@@ -11,6 +11,7 @@ spec:
     - Ingress
     - Egress
   ingress:
+    # allow access from ingress
     - from:
         - namespaceSelector:
             matchLabels:
@@ -22,6 +23,7 @@ spec:
         - protocol: TCP
           port: 443
   egress:
+    # allow access to dex
     - to:
         - namespaceSelector:
             matchLabels:

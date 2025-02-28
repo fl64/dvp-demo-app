@@ -11,6 +11,7 @@ spec:
   policyTypes:
     - Ingress
   ingress:
+    # allow access for d8 v ssh to vms
     - from:
         - namespaceSelector:
             matchLabels:

@@ -10,6 +10,7 @@ spec:
     - Ingress
     - Egress
   ingress:
+    # allow access from ingress
     - from:
         - namespaceSelector:
             matchLabels:
@@ -20,6 +21,7 @@ spec:
       ports:
         - protocol: TCP
           port: 5000
+    # allow access from healthcheck agent
     - from:
         - namespaceSelector:
             matchLabels:
@@ -31,6 +33,7 @@ spec:
         - protocol: TCP
           port: 5000
   egress:
+    # allow access to database
     - to:
         - namespaceSelector:
             matchLabels:
@@ -41,6 +44,7 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+    # allow access to cluster DNS
     - to:
         - namespaceSelector:
             matchLabels:
@@ -48,6 +52,7 @@ spec:
       ports:
         - protocol: UDP
           port: 53
+    # allow access to outside to download packages and app sources
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
