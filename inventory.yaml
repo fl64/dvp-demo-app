@@ -6,6 +6,7 @@ all:
     ansible_user: cloud
     # путь к приватному ключу
     ansible_ssh_private_key_file: ./tmp/demo
+    ansible_python_interpreter: /usr/bin/python3
   hosts:
     # название узла в формате <название ВМ>.<название проекта>
     frontend.demo-app:
