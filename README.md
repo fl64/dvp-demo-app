@@ -34,7 +34,7 @@ A demo of a simple three-tier application (Frontend -> Backend -> Database) to d
 
 ## Requirements
 
-Ensure the following d8 modules are enabled:
+Ensure the following d8 modules are enabled and configured:
 - `admission-policy-engine`
 - `cni-cilium`
 - `console`

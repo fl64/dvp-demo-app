@@ -14,12 +14,14 @@ vars:
 
 tasks:
   init:
+    desc: "Create temp dirs"
     cmds:
       - mkdir -p {{ .TMP_PATH  }}
       - mkdir -p {{ .SSH_KEYS_PATH  }}
   ssh-gen:
     deps:
       - init
+    desc: Generate ssh keys for VMs
     cmds:
       - echo "🚀 Generate ssh keys {{ .SSH_PRIV_KEY_FILE }}"
       - yes | ssh-keygen -t rsa -b 1024 -f "{{ .SSH_PRIV_KEY_FILE }}" -N "" -C "{{ .SSH_KEYS_NAME }}" -v
@@ -29,22 +31,25 @@ tasks:
     vars:
       SSH_PUB_KEY:
         sh: cat "{{ .SSH_PUB_KEY_FILE }}"
+    desc: Update public ssh keys in cloudinit
     deps:
       - ssh-gen
     cmds:
       - echo "🚀 Update ssh keys"
       - grep -rwl "{{ .SSH_KEYS_NAME }}" | xargs sed -i 's|ssh-rsa [^ ]* {{ .SSH_KEYS_NAME }}|{{ .SSH_PUB_KEY }}|g'
   update-password:
-    # '$(echo -n "demo" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0)'
+    desc: Update password for users
     cmds:
     - echo "🚀 Generate password hash from >>${PASSWORD}<<"
     - |
       find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
   update-sc:
+    desc: Update storage class for VM disks
     cmds:
       - |
           find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "VirtualDisk"); .spec.persistentVolumeClaim.storageClassName="'${STORAGE_CLASS}'")' '{}' \;
   update-fqdn:
+    desc: Update FQDN for ingress and dexauthenticator
     cmds:
       - echo "🚀 Update FQDN"
       - |
@@ -58,6 +63,7 @@ tasks:
       - update-sc
       - update-fqdn
   deploy:
+    desc: Deploy demo APP infra
     vars:
       start_time:
         sh: date +%s
@@ -75,10 +81,12 @@ tasks:
         difference=$((end_time - {{.start_time}}))
         date -ud "@$difference" +'%H:%M:%S'
   undeploy:
+    desc: Remove demo APP infra
     cmds:
       - kubectl delete -k ./k8s || true
       - kubectl delete -f ./k8s/project-demo-app.yaml || true
       - kubectl delete -f ./k8s/project-demo-db.yaml || true
   uptime:
+    desc: Check VM's uptime via ansible
     cmds:
       - ansible -m shell -a "uptime" -i inventory.yaml all
