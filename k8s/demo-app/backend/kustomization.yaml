@@ -3,8 +3,8 @@ kind: Kustomization
 resources:
   - ./overlays/backend-a
   - ./overlays/backend-b
-  - ./svc.yaml
-  # - ./svchp.yaml
+  # - ./svc.yaml
+  - ./svchp.yaml
   - ./np-backend.yaml
 generatorOptions:
   disableNameSuffixHash: true
