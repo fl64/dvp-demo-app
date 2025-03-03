@@ -5,7 +5,7 @@ resources:
   # - ./ns.yaml
   - ./vm.yaml
   - ./vmd-root.yaml
-  - ./svc.yaml
+  # - ./svc.yaml
   - ./svchp.yaml
   - ./np-db.yaml
   - ./np-ssh.yaml
@@ -16,7 +16,7 @@ secretGenerator:
     files:
       - userdata=cfg/cloudinit.yaml
     type: provisioning.virtualization.deckhouse.io/cloud-init
-  - name: cred-secret
+  - name: db-secret
     literals:
       - user=healthchecker
       - password=healthchecker

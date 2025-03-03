@@ -33,13 +33,13 @@ spec:
       ports:
         - protocol: TCP
           port: 80
-    # - from:
-    #     - podSelector:
-    #         matchLabels:
-    #           app: backend
-    #   ports:
-    #     - protocol: TCP
-    #       port: 80
+          # - from:
+          #     - podSelector:
+          #         matchLabels:
+          #           app: backend
+          #   ports:
+          #     - protocol: TCP
+          #       port: 80
   egress:
     # allow access to cluster DNS
     - to:

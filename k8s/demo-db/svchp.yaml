@@ -1,7 +1,7 @@
 apiVersion: network.deckhouse.io/v1alpha1
 kind: ServiceWithHealthchecks
 metadata:
-  name: db-hp
+  name: db
 spec:
   ports:
     - port: 5432
