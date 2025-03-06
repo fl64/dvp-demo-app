@@ -15,5 +15,5 @@ spec:
         postgreSQL:
           targetPort: 5432
           dbName: mydb
-          authSecretName: cred-secret
+          authSecretName: db-secret
           query: "SELECT 1"
