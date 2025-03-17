@@ -34,7 +34,7 @@ metadata:
   name: demo-app-admin
 spec:
   email: demo-app-admin@flant.com
-  password: JDJ5JDEwJDlUYjFWRmE3Q1p6WS9uMHcwRy8yQy56UnBJdWZMMi9wQXA0N1U5cThpUksydXV0VHBjSktHCgo=
+  password: JDJ5JDEwJE9LOHpya1FIWDRnc2NCS0d4djBQOWVYTWgveHR3OTJZZlJzaEJmUU1QckFRZTZXOE9aTWxtCgo=
 ---
 apiVersion: deckhouse.io/v1
 kind: ClusterAuthorizationRule

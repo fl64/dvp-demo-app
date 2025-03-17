@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
   - ./vm
   - ./container
-  # - ./svc.yaml
-  - ./svchp.yaml
+  - ./svc.yaml
+  # - ./svchp.yaml
   - ./np-frontend.yaml
