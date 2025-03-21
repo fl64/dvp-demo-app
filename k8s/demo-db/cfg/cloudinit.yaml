@@ -21,7 +21,6 @@ runcmd:
   - su - postgres -c "psql -f /tmp/init-db.sql"
   - rc-service postgresql restart
 write_files:
-write_files:
   - path: /tmp/init-db.sql
     permissions: "0644"
     content: |
