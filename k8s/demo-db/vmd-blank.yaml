@@ -5,4 +5,4 @@ metadata:
 spec:
   persistentVolumeClaim:
     size: 1G
-    storageClassName: i-linstor-thin-r1
+    storageClassName: rv-thin-r1
