@@ -36,7 +36,16 @@ tasks:
       - ssh-gen
     cmds:
       - echo "🚀 Update ssh keys"
-      - grep -rwl "{{ .SSH_KEYS_NAME }}" | xargs sed -i 's|ssh-rsa [^ ]* {{ .SSH_KEYS_NAME }}|{{ .SSH_PUB_KEY }}|g'
+      - |
+        if [[ "$(uname)" == "Darwin" ]]; then
+          # macOS
+          export LC_CTYPE=C  # Ensure sed handles text properly on macOS
+          grep -rwl "demo" | xargs sed -i '' 's|ssh-rsa [^ ]* demo|ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDfILbz5mQu7g7m17IrcK6ku1P+6wJK/S7klJV+Nf8ylRXPpakJxHfXxRz7w+gHib5qdShOk+Rku37Uum193KW2esS7U1Z1BKer39LfINerRJWTJ6rz4yJ7MFgvrL5rkw33IBrTBfB2h667MerjS/tpTv1IxSUZQzE8yQ7Q73AzeQ== demo|g'
+          unset LC_CTYPE  # Clean up environment variable after execution
+        else
+          # Linux
+          grep -rwl "demo" | xargs sed -i 's|ssh-rsa [^ ]* demo|ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDfILbz5mQu7g7m17IrcK6ku1P+6wJK/S7klJV+Nf8ylRXPpakJxHfXxRz7w+gHib5qdShOk+Rku37Uum193KW2esS7U1Z1BKer39LfINerRJWTJ6rz4yJ7MFgvrL5rkw33IBrTBfB2h667MerjS/tpTv1IxSUZQzE8yQ7Q73AzeQ== demo|g'
+        fi
   update-password:
     desc: Update password for users
     cmds:
@@ -79,7 +88,13 @@ tasks:
       - |
         export end_time=$(date +%s)
         difference=$((end_time - {{.start_time}}))
-        date -ud "@$difference" +'%H:%M:%S'
+        if [[ "$(uname)" == "Darwin" ]]; then
+          # macOS
+          date -ur "$difference" +'%H:%M:%S'
+        else
+          # Linux
+          date -ud "@$difference" +'%H:%M:%S'
+        fi
   undeploy:
     desc: Remove demo APP infra
     cmds:
