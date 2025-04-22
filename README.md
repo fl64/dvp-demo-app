@@ -2,7 +2,14 @@
 
 ## Overview
 
-A demo of a simple three-tier application (Frontend -> Backend -> Database) to demonstrate platform capabilities.
+A demo application with a three-tier architecture (**Frontend → Backend → Database**) designed to:
+
+1. Show the capabilities of the cloud platform
+2. Demonstrate how Network Policies work
+3. Example of integration with Dex authentication system
+4. Testing the interaction of components in a virtualized environment
+
+![](./demo-app.png)
 
 ### Application Structure
 
@@ -17,24 +24,32 @@ A demo of a simple three-tier application (Frontend -> Backend -> Database) to d
     - VM: `backend-a` (Flask + Gunicorn)
     - VM: `backend-b` (Flask + Gunicorn)
 
-### Security
-- Component interaction is restricted by network policies.
-- Application access requires authentication via Dex.
+Component interaction is restricted by network policies. Application access requires authentication via Dex.
 
-![](./demo-app.png)
+## Access System
 
-### Users
-- Application user: `demo-user@flant.com`
-- `demo-db` project admin: `demo-db-admin@flant.com`
-- `demo-app` project admin: `demo-app-admin@flant.com`
+| User                       | Role                             | Access Rights                            |
+| -------------------------- | -------------------------------- | ---------------------------------------- |
+| `demo-user@flant.com`      | Application User                 | Access via web interface                 |
+| `demo-db-admin@flant.com`  | Project Administrator `demo-db`  | Full VM access with PostgreSQL           |
+| `demo-app-admin@flant.com` | Project Administrator `demo-app` | Management of all application components |
+
+Translated with DeepL.com (free version)
 
 ## Repository Structure
+
 - `/apps` - Frontend and backend source code
 - `/k8s` - Kubernetes deployment manifests
 
 ## Requirements
 
+Make sure you install the following packages:
+
+- [task](https://taskfile.dev)
+- [yq](https://github.com/mikefarah/yq)
+
 Ensure the following d8 modules are enabled and configured:
+
 - `admission-policy-engine`
 - `cni-cilium`
 - `console`
@@ -53,13 +68,19 @@ PASSWORD=password
 FQDN=demo.example.com
 ```
 
-Install APP
+2. Genereate ssh key to access VMs via ssh
+
+```bash
+task ssh-gen
+```
+
+3. Install APP
 
 ```bash
 task deploy
 ```
 
-Uninstall APP
+4. Uninstall APP
 
 ```bash
 task undeploy
@@ -70,14 +91,11 @@ task undeploy
 Via SSH
 
 ```bash
-d8 v ssh -n demo-app cloud@frontend -i ./tmp/demo --local-ssh
+d8 v ssh -n demo-app cloud@<vmname> -i ./tmp/demo --local-ssh
 ```
 
 Via console
 
 ```bash
-d8 v console -n demo-app frontend
+d8 v console -n demo-app <vmname>
 ```
-
-
-#CDD1E6 или #E7E9F5
