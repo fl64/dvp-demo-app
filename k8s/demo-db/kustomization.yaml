@@ -5,8 +5,8 @@ resources:
   # - ./ns.yaml
   - ./vm.yaml
   - ./vmd-root.yaml
-  # - ./svc.yaml
-  - ./svchp.yaml
+  - ./svc.yaml
+  # - ./svchp.yaml
   - ./np-db.yaml
   - ./np-ssh.yaml
 generatorOptions:
