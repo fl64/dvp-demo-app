@@ -11,7 +11,7 @@ users:
     chpasswd: {expire: False}
     lock_passwd: false
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJPiE9aJL1IFP8fOZdBKW3HxGnhcRzKKw2jznutjZxyCPOepreu+UEDnKXa3bd+asylx6prib4J7rThm/+AKB8vCLIjP6l4tgr12V7rommXWO3NtES4fi3SbR8g+1V2ARDQ+SgMtXoFFMBmI9J2DZKX/kyo5MszgdeT3HLOeTsPw== demo
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJc5RyfmaTMb6K7EJv649DqfawyU5zuNRKH5RV+JaXrPxnhVMx9Ank6QT96TKgeVyujABNRkatJM5ku+Mtu6bmFXql5MYpPj0pyZusyD3fxYNy54TgxdV1Rtt34HZdZ4Fmc6YRsGOYdKgLWwhX6C+gTVCH5Pkphtqu5PAaMMZoiw== demo
 runcmd:
   - rc-service postgresql setup
   - rc-update add postgresql default

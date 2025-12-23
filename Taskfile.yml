@@ -27,6 +27,11 @@ tasks:
       - yes | ssh-keygen -t rsa -b 1024 -f "{{ .SSH_PRIV_KEY_FILE }}" -N "" -C "{{ .SSH_KEYS_NAME }}" -v
     status:
       - test -f "{{ .SSH_PRIV_KEY_FILE }}"
+      - test -f "{{ .SSH_PUB_KEY_FILE }}"
+  check-ssh:
+    desc: Validate SSH key pair
+    cmds:
+      - 'ssh-keygen -y -f "{{ .SSH_PRIV_KEY_FILE }}" 2>/dev/null | diff -q - "{{ .SSH_PUB_KEY_FILE }}" >/dev/null && echo "SSH key pair is valid" || (echo "Public key does not match private key" && exit 1)'
   update-ssh:
     vars:
       SSH_PUB_KEY:
@@ -37,14 +42,16 @@ tasks:
     cmds:
       - echo "🚀 Update ssh keys"
       - |
+        SSH_PUB_KEY=$(cat "{{ .SSH_PUB_KEY_FILE }}")
+        SSH_PUB_KEY_ESCAPED=$(echo "$SSH_PUB_KEY" | sed 's/[[\.*^$()+?{|]/\\&/g')
         if [[ "$(uname)" == "Darwin" ]]; then
           # macOS
           export LC_CTYPE=C  # Ensure sed handles text properly on macOS
-          grep -rwl "demo" | xargs sed -i '' 's|ssh-rsa [^ ]* demo|ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDfILbz5mQu7g7m17IrcK6ku1P+6wJK/S7klJV+Nf8ylRXPpakJxHfXxRz7w+gHib5qdShOk+Rku37Uum193KW2esS7U1Z1BKer39LfINerRJWTJ6rz4yJ7MFgvrL5rkw33IBrTBfB2h667MerjS/tpTv1IxSUZQzE8yQ7Q73AzeQ== demo|g'
+          grep -rwl "demo" | xargs sed -i '' "s|ssh-rsa [^ ]* demo|${SSH_PUB_KEY_ESCAPED}|g"
           unset LC_CTYPE  # Clean up environment variable after execution
         else
           # Linux
-          grep -rwl "demo" | xargs sed -i 's|ssh-rsa [^ ]* demo|ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDfILbz5mQu7g7m17IrcK6ku1P+6wJK/S7klJV+Nf8ylRXPpakJxHfXxRz7w+gHib5qdShOk+Rku37Uum193KW2esS7U1Z1BKer39LfINerRJWTJ6rz4yJ7MFgvrL5rkw33IBrTBfB2h667MerjS/tpTv1IxSUZQzE8yQ7Q73AzeQ== demo|g'
+          grep -rwl "demo" | xargs sed -i "s|ssh-rsa [^ ]* demo|${SSH_PUB_KEY_ESCAPED}|g"
         fi
   update-password:
     desc: Update password for users
@@ -66,11 +73,14 @@ tasks:
           yq -i '(.spec.dnsNames[]? |= env(FQDN))' ./k8s/demo-app/cert.yaml
           yq -i '(.spec.applicationDomain |= env(FQDN))' ./k8s/demo-app/dex.yaml
   update:
-    deps:
-      - update-ssh
-      - update-password
-      - update-sc
-      - update-fqdn
+    cmds:
+      - task: init
+      - task: ssh-gen
+      - task: update-ssh
+      - task: update-password
+      - task: update-sc
+      - task: update-fqdn
+
   deploy:
     desc: Deploy demo APP infra
     vars:
@@ -105,3 +115,25 @@ tasks:
     desc: Check VM's uptime via ansible
     cmds:
       - ansible -m shell -a "uptime" -i inventory.yaml all
+  ssh-to-frontend:
+    desc: SSH to frontend VM
+    cmds:
+      - ssh -vvvvv -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true frontend.demo-app 22' cloud@frontend-0
+
+  ssh-to-backend-a:
+    desc: SSH to backend VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-a.demo-app 22' cloud@backend-0
+
+  ssh-to-backend-b:
+    desc: SSH to backend VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-b.demo-app 22' cloud@backend-b
+
+  kill-vms:
+    desc: Kill VM
+    cmds:
+      - kubectl -n demo-app delete vm --all
+      - kubectl -n demo-app delete vd --all
+      - kubectl -n demo-db delete vm --all
+      - kubectl -n demo-db delete vd --all
