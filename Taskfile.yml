@@ -58,7 +58,7 @@ tasks:
     cmds:
     - echo "🚀 Generate password hash from >>${PASSWORD}<<"
     - |
-      find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 10 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
+      find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 14 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
   update-sc:
     desc: Update storage class for VM disks
     cmds:
