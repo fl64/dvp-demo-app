@@ -9,11 +9,12 @@ spec:
   runPolicy: AlwaysOn
   bootloader: EFI
   virtualMachineClassName: generic
+  virtualMachineIPAddressName: db-ip
   cpu:
     cores: 1
     coreFraction: 10%
   memory:
-    size: 2048Mi
+    size: 2Gi
   provisioning:
     type: UserDataRef
     userDataRef:
@@ -22,3 +23,5 @@ spec:
   blockDeviceRefs:
     - kind: VirtualDisk
       name: root-disk-db
+  disruptions:
+    restartApprovalMode: Automatic

@@ -5,7 +5,6 @@ metadata:
 spec:
   persistentVolumeClaim:
     size: 4G
-    storageClassName: rv-thin-r1 # linstor-thin-r2
   dataSource:
     type: ObjectRef
     objectRef:

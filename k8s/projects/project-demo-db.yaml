@@ -2,9 +2,9 @@
 apiVersion: deckhouse.io/v1alpha2
 kind: Project
 metadata:
-  name: demo-app
+  name: demo-db
 spec:
-  description: demo-app
+  description: demo-db
   projectTemplateName: default
   parameters:
     resourceQuota:
@@ -16,30 +16,30 @@ spec:
         memory: 20Gi
     administrators:
       - subject: Group
-        name: demo-app-admins
+        name: demo-db-admins
 ---
 apiVersion: deckhouse.io/v1alpha1
 kind: Group
 metadata:
-  name: demo-app-admins
+  name: demo-db-admins
 spec:
   members:
     - kind: User
-      name: demo-app-admin
-  name: demo-app-admins
+      name: demo-db-admin
+  name: demo-db-admins
 ---
 apiVersion: deckhouse.io/v1
 kind: User
 metadata:
-  name: demo-app-admin
+  name: demo-db-admin
 spec:
-  email: demo-app-admin@flant.com
-  password: JDJ5JDEwJGR1ellXYldWWlQxUGk0N1RpYlQ0WHVPcUpQb2ZMckZua2JCdUdmemRhbUZ2Yk9MZ2R1SXJTCgo=
+  email: demo-db-admin@flant.com
+  password: JDJ5JDE0JERwZEhCQVVOWm1Ya3ZITEt0bHhDdmU4Z1NDRFpZeVBsaXlLdU9nOGJuUDFTU0ptemhiYklLCgo=
 ---
 apiVersion: deckhouse.io/v1
 kind: ClusterAuthorizationRule
 metadata:
-  name: demo-app-admin
+  name: demo-db-admin
 spec:
   accessLevel: Admin
   allowScale: true
@@ -47,8 +47,8 @@ spec:
   portForwarding: false
   subjects:
     - kind: Group
-      name: demo-app-admins
+      name: demo-db-admins
   namespaceSelector:
     labelSelector:
       matchLabels:
-        kubernetes.io/metadata.name: demo-app
+        kubernetes.io/metadata.name: demo-db

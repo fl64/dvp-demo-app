@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ./vm.yaml
-  - ./vmip.yaml
-  - ./vmd-root.yaml
+  - project-demo-app.yaml
+  - project-demo-db.yaml
+  - cvi.yaml

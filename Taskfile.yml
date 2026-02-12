@@ -59,11 +59,6 @@ tasks:
     - echo "🚀 Generate password hash from >>${PASSWORD}<<"
     - |
       find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 14 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
-  update-sc:
-    desc: Update storage class for VM disks
-    cmds:
-      - |
-          find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "VirtualDisk"); .spec.persistentVolumeClaim.storageClassName="'${STORAGE_CLASS}'")' '{}' \;
   update-fqdn:
     desc: Update FQDN for ingress and dexauthenticator
     cmds:
@@ -78,7 +73,6 @@ tasks:
       - task: ssh-gen
       - task: update-ssh
       - task: update-password
-      - task: update-sc
       - task: update-fqdn
 
   deploy:
@@ -89,8 +83,7 @@ tasks:
     cmds:
       - task: update
       - echo "🚀 Deploy APP"
-      - kubectl apply -f ./k8s/project-demo-app.yaml
-      - kubectl apply -f ./k8s/project-demo-db.yaml
+      - kubectl apply -k ./k8s/projects
       - kubectl get project -o name | xargs kubectl wait --for='jsonpath={.status.state}=Deployed' --timeout=360s
       - kubectl apply -k ./k8s
       - kubectl -n demo-db get vm -o name | xargs kubectl -n demo-db wait --for='jsonpath={.status.phase}=Running' --timeout=360s
@@ -109,8 +102,7 @@ tasks:
     desc: Remove demo APP infra
     cmds:
       - kubectl delete -k ./k8s || true
-      - kubectl delete -f ./k8s/project-demo-app.yaml || true
-      - kubectl delete -f ./k8s/project-demo-db.yaml || true
+      - kubectl delete -k ./k8s/projects || true
   uptime:
     desc: Check VM's uptime via ansible
     cmds:

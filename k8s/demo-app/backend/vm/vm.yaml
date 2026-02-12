@@ -9,6 +9,7 @@ spec:
   runPolicy: AlwaysOn
   bootloader: EFI
   virtualMachineClassName: generic
+  virtualMachineIPAddressName: backend-ip
   cpu:
     cores: 1
     coreFraction: 10%

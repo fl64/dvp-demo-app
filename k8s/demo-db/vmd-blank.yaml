@@ -5,4 +5,3 @@ metadata:
 spec:
   persistentVolumeClaim:
     size: 1G
-    storageClassName: rv-thin-r1

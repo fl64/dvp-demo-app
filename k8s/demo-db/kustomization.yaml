@@ -4,6 +4,7 @@ namespace: demo-db
 resources:
   # - ./ns.yaml
   - ./vm.yaml
+  - ./vmip.yaml
   - ./vmd-root.yaml
   - ./svc.yaml
   # - ./svchp.yaml

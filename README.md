@@ -43,10 +43,7 @@ Translated with DeepL.com (free version)
 
 ## Requirements
 
-Make sure you install the following packages:
-
-- [task](https://taskfile.dev)
-- [yq](https://github.com/mikefarah/yq)
+### Required d8 Modules
 
 Ensure the following d8 modules are enabled and configured:
 
@@ -57,33 +54,59 @@ Ensure the following d8 modules are enabled and configured:
 - `service-with-healthchecks`
 - `user-authn`
 - `virtualization`
+- `operator-argo` (required for ArgoCD installation)
+
+### Installation-Specific Requirements
+
+**For Option 1 (Manual Installation via Task):**
+- [task](https://taskfile.dev)
+- [yq](https://github.com/mikefarah/yq)
 
 ## Installation
+
+### Option 1: Manual Installation via Task
 
 1. Create a `.env` file with infrastructure settings:
 
 ```ini
-STORAGE_CLASS=linstor-thin-r1
 PASSWORD=password
 FQDN=demo.example.com
 ```
 
-2. Genereate ssh key to access VMs via ssh
+2. Generate SSH keys for VM access:
 
 ```bash
 task ssh-gen
 ```
 
-3. Install APP
+3. Deploy the application:
 
 ```bash
 task deploy
 ```
 
-4. Uninstall APP
+4. Uninstall the application:
 
 ```bash
 task undeploy
+```
+
+### Option 2: ArgoCD Installation
+
+1. Apply the ApplicationSet:
+
+```bash
+kubectl apply -f argocd/apps-appset.yaml
+kubectl apply -f argocd/projects-appset.yaml
+```
+
+2. ArgoCD will automatically create and sync applications for `demo-app` and `demo-db` namespaces.
+
+3. To remove, delete the ApplicationSet:
+
+```bash
+kubectl delete -f argocd/apps-appset.yaml
+kubectl delete -f argocd/projects-appset.yaml
 ```
 
 ## How to connect to VM
