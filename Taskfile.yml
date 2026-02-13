@@ -18,6 +18,7 @@ tasks:
     cmds:
       - mkdir -p {{ .TMP_PATH  }}
       - mkdir -p {{ .SSH_KEYS_PATH  }}
+
   ssh-gen:
     deps:
       - init
@@ -25,13 +26,16 @@ tasks:
     cmds:
       - echo "🚀 Generate ssh keys {{ .SSH_PRIV_KEY_FILE }}"
       - yes | ssh-keygen -t rsa -b 1024 -f "{{ .SSH_PRIV_KEY_FILE }}" -N "" -C "{{ .SSH_KEYS_NAME }}" -v
+      - chmod 0600 {{ .SSH_PRIV_KEY_FILE }} {{ .SSH_PUB_KEY_FILE }}
     status:
       - test -f "{{ .SSH_PRIV_KEY_FILE }}"
       - test -f "{{ .SSH_PUB_KEY_FILE }}"
+
   check-ssh:
     desc: Validate SSH key pair
     cmds:
       - 'ssh-keygen -y -f "{{ .SSH_PRIV_KEY_FILE }}" 2>/dev/null | diff -q - "{{ .SSH_PUB_KEY_FILE }}" >/dev/null && echo "SSH key pair is valid" || (echo "Public key does not match private key" && exit 1)'
+
   update-ssh:
     vars:
       SSH_PUB_KEY:
@@ -53,12 +57,14 @@ tasks:
           # Linux
           grep -rwl "demo" | xargs sed -i "s|ssh-rsa [^ ]* demo|${SSH_PUB_KEY_ESCAPED}|g"
         fi
+
   update-password:
     desc: Update password for users
     cmds:
     - echo "🚀 Generate password hash from >>${PASSWORD}<<"
     - |
       find . -name "*.yaml" -exec yq eval --inplace 'with(select(.kind == "User"); .spec.password="'$(echo "${PASSWORD}" | htpasswd -BinC 14 "" | cut -d: -f2 | base64 -w0)'")' '{}' \;
+
   update-fqdn:
     desc: Update FQDN for ingress and dexauthenticator
     cmds:
@@ -67,6 +73,7 @@ tasks:
           yq -i '(.spec.rules[]?.host |= env(FQDN)) | (.spec.tls[].hosts[] |= env(FQDN))' ./k8s/demo-app/ingress.yaml
           yq -i '(.spec.dnsNames[]? |= env(FQDN))' ./k8s/demo-app/cert.yaml
           yq -i '(.spec.applicationDomain |= env(FQDN))' ./k8s/demo-app/dex.yaml
+
   update:
     cmds:
       - task: init
@@ -98,27 +105,40 @@ tasks:
           # Linux
           date -ud "@$difference" +'%H:%M:%S'
         fi
+ 
   undeploy:
     desc: Remove demo APP infra
     cmds:
       - kubectl delete -k ./k8s || true
       - kubectl delete -k ./k8s/projects || true
+
+  argocd-apply:
+    desc: Apply ArgoCD ApplicationSet manifests
+    cmds:
+      - kubectl apply -f argocd/projects-appset.yaml
+      - kubectl apply -f argocd/apps-appset.yaml
+
+  argocd-delete:
+    desc: Delete ArgoCD ApplicationSet manifests
+    cmds:
+      - kubectl delete -f argocd/apps-appset.yaml || true
+      - kubectl delete -f argocd/projects-appset.yaml || true
+
   uptime:
     desc: Check VM's uptime via ansible
     cmds:
       - ansible -m shell -a "uptime" -i inventory.yaml all
-
+ 
   ansible-update:
     desc: Update packages on all VMs via Ansible
     cmds:
-      - ansible-playbook ansible/update-packages.yml --check --diff
-
+      - ansible-playbook ansible/update-packages.yml --diff
+ 
   ansible-security-check:
     desc: Run security checks on all VMs via Ansible
     cmds:
       - ansible-playbook ansible/security-check.yml --check --diff
-
-
+ 
   ssh-to-frontend:
     desc: SSH to frontend VM
     cmds:

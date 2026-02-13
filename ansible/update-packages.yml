@@ -1,0 +1,52 @@
+---
+- name: Update system packages on all VMs
+  hosts: all
+  become: yes
+  gather_facts: yes
+  
+  tasks:
+    - name: Update package index
+      apk:
+        update_cache: yes
+      when: ansible_os_family == "Alpine"
+      register: update_result
+    
+    - name: Check for available updates
+      command: apk list --upgradable
+      register: available_updates
+      changed_when: false
+      when: ansible_os_family == "Alpine"
+    
+    - name: Display available updates count
+      debug:
+        msg: "{{ inventory_hostname }}: Available updates - {{ available_updates.stdout_lines | length }} packages"
+      when: 
+        - ansible_os_family == "Alpine"
+        - available_updates.stdout_lines | length > 0
+    
+    - name: Show available updates
+      debug:
+        var: available_updates.stdout_lines
+      when:
+        - ansible_os_family == "Alpine"
+        - available_updates.stdout_lines | length > 0
+        - available_updates.stdout_lines | length <= 10
+    
+    - name: Upgrade all packages
+      apk:
+        upgrade: yes
+        update_cache: yes
+      when: ansible_os_family == "Alpine"
+      register: upgrade_result
+    
+    - name: Display upgrade summary
+      debug:
+        msg: "{{ inventory_hostname }}: Packages updated successfully"
+      when: upgrade_result.changed
+    
+    - name: No updates available
+      debug:
+        msg: "{{ inventory_hostname }}: All packages are up to date"
+      when: 
+        - ansible_os_family == "Alpine"
+        - available_updates.stdout_lines | length == 0
