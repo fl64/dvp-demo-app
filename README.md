@@ -40,6 +40,7 @@ Translated with DeepL.com (free version)
 
 - `/apps` - Frontend and backend source code
 - `/k8s` - Kubernetes deployment manifests
+- `/ansible` - Ansible playbooks for VM management
 
 ## Requirements
 
@@ -61,6 +62,7 @@ Ensure the following d8 modules are enabled and configured:
 **For Option 1 (Manual Installation via Task):**
 - [task](https://taskfile.dev)
 - [yq](https://github.com/mikefarah/yq)
+- [ansible](https://docs.ansible.com/ansible/latest/index.html)
 
 ## Installation
 
@@ -122,3 +124,52 @@ Via console
 ```bash
 d8 v console -n demo-app <vmname>
 ```
+
+## Ansible Management
+
+The project includes Ansible playbooks for automated VM management using `d8 v ansible-inventory` command.
+
+### Available Tasks
+
+**Update packages on all VMs:**
+```bash
+task ansible-update
+```
+
+**Run security checks on all VMs:**
+```bash
+task ansible-security-check
+```
+
+**Run all Ansible tasks (update + security check):**
+```bash
+task ansible-all
+```
+
+### Ansible Configuration
+
+The project uses dynamic inventory via `d8 v ansible-inventory` command, which automatically:
+- Discovers all VMs in `demo-app` namespace
+- Configures SSH connection through port-forwarding
+- Sets up connection parameters
+
+Inventory script (`ansible/inventory.sh`) uses `d8 v ansible-inventory` to get VMs from `demo-app` namespace. The `ansible.cfg` file contains default settings for SSH connection and privilege escalation.
+
+### Security Checks
+
+The security check playbook performs:
+- Check for available security updates
+- Verify SSH configuration (disable root login, fix permissions)
+- Check SSH authorized_keys permissions
+- List listening ports and running services
+- Check disk usage
+- Find world-writable files in critical directories
+- Display system uptime
+
+### Package Updates
+
+The update playbook:
+- Updates package index
+- Lists available updates
+- Upgrades all packages
+- Shows update summary

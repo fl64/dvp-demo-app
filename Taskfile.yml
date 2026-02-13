@@ -107,6 +107,18 @@ tasks:
     desc: Check VM's uptime via ansible
     cmds:
       - ansible -m shell -a "uptime" -i inventory.yaml all
+
+  ansible-update:
+    desc: Update packages on all VMs via Ansible
+    cmds:
+      - ansible-playbook ansible/update-packages.yml --check --diff
+
+  ansible-security-check:
+    desc: Run security checks on all VMs via Ansible
+    cmds:
+      - ansible-playbook ansible/security-check.yml --check --diff
+
+
   ssh-to-frontend:
     desc: SSH to frontend VM
     cmds:

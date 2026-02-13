@@ -5,6 +5,8 @@ metadata:
   labels:
     vm: backend
     app: backend
+  annotations:
+    provisioning.virtualization.deckhouse.io/ansible_user: cloud
 spec:
   runPolicy: AlwaysOn
   bootloader: EFI
