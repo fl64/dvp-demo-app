@@ -1,0 +1,94 @@
+---
+- name: Update frontend index.html on VM
+  hosts: frontend.demo-app
+  become: yes
+  gather_facts: yes
+
+  vars:
+    frontend_html_local: "{{ playbook_dir }}/../apps/frontend/index.html"
+    frontend_html_path: "/var/www/frontend/index.html"
+    frontend_type: "vm"
+    header_title: "Three-Tier Application Demo"
+    header_color: "#000000"
+
+  tasks:
+    - name: Ensure frontend directory exists
+      file:
+        path: /var/www/frontend
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Read local HTML file
+      slurp:
+        src: "{{ playbook_dir }}/../apps/frontend/index.html"
+      register: html_file_content
+      delegate_to: localhost
+      run_once: true
+      become: false
+
+    - name: Write HTML file to VM
+      copy:
+        content: "{{ html_file_content.content | b64decode }}"
+        dest: /tmp/index.html
+        mode: '0644'
+      register: copy_result
+
+    - name: Replace placeholders in HTML file
+      replace:
+        path: /tmp/index.html
+        regexp: "{{ item.regexp }}"
+        replace: "{{ item.replace }}"
+      loop:
+        - { regexp: '%%HEADER_TITLE%%', replace: '{{ header_title }}' }
+        - { regexp: '%%HEADER_COLOR%%', replace: '{{ header_color }}' }
+        - { regexp: '%%FRONTEND_TYPE%%', replace: '{{ frontend_type }}' }
+
+    - name: Remove old file to force update
+      file:
+        path: "{{ frontend_html_path }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Copy updated HTML to frontend directory
+      copy:
+        src: /tmp/index.html
+        dest: "{{ frontend_html_path }}"
+        remote_src: yes
+        mode: '0644'
+        owner: root
+        group: root
+        backup: yes
+        force: yes
+      notify:
+        - restart nginx
+        - clear nginx cache
+
+    - name: Verify FRONTEND_TYPE replacement
+      shell: |
+        grep -c 'data-frontend-type="vm"' {{ frontend_html_path }} || echo "ERROR: data-frontend-type not replaced correctly"
+        grep -c "window.FRONTEND_TYPE_EMBEDDED = 'vm'" {{ frontend_html_path }} || echo "ERROR: FRONTEND_TYPE_EMBEDDED not replaced correctly"
+        grep -c "%%FRONTEND_TYPE%%" {{ frontend_html_path }} && echo "WARNING: Placeholder still exists!" || echo "OK: All placeholders replaced"
+      register: verify_result
+      changed_when: false
+
+    - name: Show verification result
+      debug:
+        var: verify_result.stdout_lines
+
+    - name: Clean up temporary file
+      file:
+        path: /tmp/index.html
+        state: absent
+
+  handlers:
+    - name: restart nginx
+      shell: rc-service nginx restart
+      ignore_errors: yes
+
+    - name: clear nginx cache
+      shell: |
+        find /var/cache/nginx -type f -delete 2>/dev/null || true
+        find /var/lib/nginx -type f -name "*.tmp" -delete 2>/dev/null || true
+      ignore_errors: yes

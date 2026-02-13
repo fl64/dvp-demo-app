@@ -8,6 +8,15 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: https://demo-app-dex-authenticator.demo-app.svc.cluster.local/dex-authenticator/auth
     nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-User,X-Auth-Request-Email
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # Disable caching completely
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   add_header Cache-Control "no-cache, no-store, must-revalidate, max-age=0" always;
+    #   add_header Pragma "no-cache" always;
+    #   add_header Expires "0" always;
+    # nginx.ingress.kubernetes.io/server-snippet: |
+    #   proxy_cache off;
+    #   proxy_no_cache 1;
+    #   proxy_cache_bypass 1;
 spec:
   ingressClassName: nginx
   rules:

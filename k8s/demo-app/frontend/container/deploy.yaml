@@ -16,8 +16,8 @@ spec:
         - name: configure-frontend
           image: nginx:alpine
           env:
-            - name: HEADER_TITLE
-              value: "Container frontend"
+            # - name: HEADER_TITLE
+            #   value: "Container frontend"
             - name: HEADER_COLOR
               value: "red"
             - name: FRONT
@@ -25,7 +25,7 @@ spec:
           command:
             - sh
             - -c
-            - "curl ${FRONT} | sed \"s|%%HEADER_TITLE%%|${HEADER_TITLE}|g\" > /usr/share/nginx/html/index.html && sed -i \"s|%%HEADER_COLOR%%|${HEADER_COLOR}|g\" /usr/share/nginx/html/index.html"
+            - "curl -sq ${FRONT} | sed 's|%%HEADER_TITLE%%|Three-Tier Application Demo|g' | sed 's|%%HEADER_COLOR%%|#000000|g' | sed 's|%%FRONTEND_TYPE%%|container|g' > /usr/share/nginx/html/index.html"
           volumeMounts:
             - name: nginx-html-volume
               mountPath: /usr/share/nginx/html

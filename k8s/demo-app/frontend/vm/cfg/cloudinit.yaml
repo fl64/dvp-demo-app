@@ -33,10 +33,11 @@ write_files:
           }
       }
 runcmd:
-  - mkdir /var/www/frontend/
+  - mkdir -p /var/www/frontend/
   - curl -sq https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/frontend/index.html > /var/www/frontend/index.html
-  - sed -i "s|%%HEADER_TITLE%%|VM Frontend|g" /var/www/frontend/index.html
-  - sed -i "s|%%HEADER_COLOR%%|blue|g" /var/www/frontend/index.html
+  - sed -i 's|%%HEADER_TITLE%%|Three-Tier Application Demo|g' /var/www/frontend/index.html
+  - sed -i 's|%%HEADER_COLOR%%|#000000|g' /var/www/frontend/index.html
+  - sed -i 's|%%FRONTEND_TYPE%%|vm|g' /var/www/frontend/index.html
   - rc-update add nginx default
   - rc-service nginx start
 final_message: "\U0001F525\U0001F525\U0001F525 The system is finally up, after $UPTIME seconds \U0001F525\U0001F525\U0001F525"

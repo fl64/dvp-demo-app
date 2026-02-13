@@ -12,11 +12,220 @@
         table {
             width: 100%;
         }
+        table td {
+            vertical-align: middle;
+        }
+        table th {
+            vertical-align: middle;
+        }
+        table th:last-child {
+            text-align: right;
+        }
+        table td:last-child {
+            text-align: right;
+        }
+        table td .btn {
+            vertical-align: middle;
+            margin: 0;
+            height: 38px;
+            line-height: 1.5;
+            padding: 0.375rem 0.75rem;
+        }
+        .input-group .btn {
+            height: 38px;
+            line-height: 1.5;
+            padding: 0.375rem 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn {
+            box-sizing: border-box;
+        }
+        .connection-diagram-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 15px;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        .connection-diagram {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            flex-wrap: nowrap;
+        }
+        .node-box {
+            flex: 1 1 0;
+            min-width: 100px;
+            max-width: calc(33.333% - 16px);
+            height: 90px;
+            padding: 12px 10px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: normal;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            overflow: visible;
+            flex-shrink: 1;
+            transition: none !important;
+        }
+        .node-box .node-type {
+            font-size: 1rem;
+            opacity: 0.95;
+            margin-bottom: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .node-box .node-hostname {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            line-height: 1.3;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        .connection-arrow {
+            font-size: 1.5rem;
+            color: #6b7280;
+            flex-shrink: 0;
+            margin: 0 4px;
+        }
+
+        /* Smooth table appearance */
+        .table {
+            opacity: 0;
+            transition: opacity 0.2s ease-in;
+        }
+        .table.loaded {
+            opacity: 1;
+        }
+        .table tbody tr {
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+        }
+        .table tbody tr.loaded {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .table tbody tr:nth-child(1) { transition-delay: 0.01s; }
+        .table tbody tr:nth-child(2) { transition-delay: 0.02s; }
+        .table tbody tr:nth-child(3) { transition-delay: 0.03s; }
+        .table tbody tr:nth-child(4) { transition-delay: 0.04s; }
+        .table tbody tr:nth-child(5) { transition-delay: 0.05s; }
+        .table tbody tr:nth-child(n+6) { transition-delay: 0.06s; }
+
+        /* Unified color scheme */
+        .btn-primary {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .btn-primary:focus, .btn-primary:active {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+        /* Tablet and smaller - уменьшаем размеры */
+        @media (max-width: 768px) {
+            .connection-diagram {
+                gap: 8px;
+            }
+            .node-box {
+                min-width: 80px;
+                height: 85px;
+                padding: 10px 8px;
+            }
+            .node-box .node-type {
+                font-size: 0.9rem;
+            }
+            .node-box .node-hostname {
+                font-size: 0.8rem;
+            }
+            .connection-arrow {
+                font-size: 1.25rem;
+            }
+        }
+
+        /* Mobile - еще меньше */
+        @media (max-width: 576px) {
+            .connection-diagram {
+                gap: 6px;
+            }
+            .node-box {
+                min-width: 60px;
+                height: 80px;
+                padding: 8px 6px;
+            }
+            .node-box .node-type {
+                font-size: 0.85rem;
+            }
+            .node-box .node-hostname {
+                font-size: 0.75rem;
+            }
+            .connection-arrow {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4" id="header" style="color: %%HEADER_COLOR%%;">%%HEADER_TITLE%%</h1>
+        <h1 class="mb-4" id="header" style="color: #000000;">%%HEADER_TITLE%%</h1>
+
+        <div class="mb-5" style="margin-left: -15px; margin-right: -15px;">
+            <div class="connection-diagram-wrapper">
+                <div class="connection-diagram">
+                    <div class="node-box" id="frontend-node" data-frontend-type="%%FRONTEND_TYPE%%" style="background: #64748b;">
+                        <div id="frontend-name">
+                            <div class="node-type">Loading...</div>
+                            <div class="node-hostname"></div>
+                        </div>
+                    </div>
+                    <div class="connection-arrow">→</div>
+                    <div class="node-box" id="backend-node" style="background: #3b82f6;">
+                        <div id="backend-name">
+                            <div class="node-type">Loading...</div>
+                            <div class="node-hostname"></div>
+                        </div>
+                    </div>
+                    <div class="connection-arrow">→</div>
+                    <div class="node-box" id="db-node" style="background: #3b82f6;">
+                        <div id="db-name">
+                            <div class="node-type">Loading...</div>
+                            <div class="node-hostname"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="mb-4">
             <h2>Ecosystem</h2>
@@ -44,25 +253,50 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Frontend type embedded during deployment (replaced by sed)
+        // This will be replaced: %%FRONTEND_TYPE%% -> container or vm
+        window.FRONTEND_TYPE_EMBEDDED = '%%FRONTEND_TYPE%%';
+
         const backendUrl = '/api';
 
         function fetchData() {
+            const table = document.querySelector('.table');
+            const tbody = document.getElementById('data-table');
+
+            // Fade out table
+            table.style.opacity = '0.5';
+
             fetch(`${backendUrl}/data`)
                 .then(response => response.json())
                 .then(data => {
-                    const tbody = document.getElementById('data-table');
-                    tbody.innerHTML = ''; // Очистка таблицы
-                    data.forEach(item => {
+                    tbody.innerHTML = ''; // Clear table
+
+                    // Add rows with minimal delay for smooth appearance
+                    data.forEach((item, index) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${item.id}</td>
                             <td>${item.name}</td>
-                            <td><button class="btn btn-danger btn-sm" onclick="deleteData(${item.id})">Delete</button></td>
+                            <td><button class="btn btn-danger" onclick="deleteData(${item.id})">Delete</button></td>
                         `;
                         tbody.appendChild(row);
+
+                        // Trigger animation after a tiny delay
+                        setTimeout(() => {
+                            row.classList.add('loaded');
+                        }, index * 10);
                     });
+
+                    // Show table after all rows added
+                    setTimeout(() => {
+                        table.classList.add('loaded');
+                        table.style.opacity = '1';
+                    }, data.length * 10 + 50);
                 })
-                .catch(error => console.error('Error fetching data:', error));
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    table.style.opacity = '1';
+                });
         }
 
         function addData() {
@@ -89,12 +323,131 @@
                 .catch(error => console.error('Error deleting data:', error));
         }
 
+        function detectFrontendType() {
+            // Check data attribute first (most reliable - set by sed)
+            const frontendNode = document.getElementById('frontend-node');
+            if (frontendNode) {
+                const dataType = frontendNode.getAttribute('data-frontend-type');
+                if (dataType) {
+                    const trimmedType = dataType.trim().toLowerCase();
+                    // Check if it's a valid type and not the placeholder
+                    if (trimmedType === 'container' || trimmedType === 'vm') {
+                        console.log('Frontend type detected from data attribute:', trimmedType);
+                        return trimmedType;
+                    }
+                }
+            }
+
+            // Check JavaScript variable (fallback)
+            if (typeof window.FRONTEND_TYPE_EMBEDDED !== 'undefined') {
+                const embeddedType = window.FRONTEND_TYPE_EMBEDDED;
+                if (embeddedType && typeof embeddedType === 'string') {
+                    const trimmedType = embeddedType.trim().toLowerCase();
+                    // Check if it's a valid type and not the placeholder
+                    if (trimmedType === 'container' || trimmedType === 'vm') {
+                        console.log('Frontend type detected from JS variable:', trimmedType);
+                        return trimmedType;
+                    }
+                }
+            }
+
+            // Try to detect from hostname as fallback
+            const hostname = window.location.hostname;
+            if (hostname && (hostname.includes('vm') || hostname.includes('virtual'))) {
+                console.log('Frontend type detected from hostname (vm):', hostname);
+                return 'vm';
+            }
+
+            // Fallback: default to container if not set
+            console.warn('Frontend type not detected, defaulting to container. Hostname:', hostname);
+            return 'container';
+        }
+
+        function formatNodeName(type, hostname) {
+            // Return object with type and hostname for structured display
+            return { type: type, hostname: hostname };
+        }
+
+        function renderNodeContent(elementId, nodeData) {
+            const element = document.getElementById(elementId);
+            if (element && nodeData) {
+                if (typeof nodeData === 'object') {
+                    element.innerHTML = `
+                        <div class="node-type">${nodeData.type}</div>
+                        <div class="node-hostname">${nodeData.hostname}</div>
+                    `;
+                } else {
+                    element.textContent = nodeData;
+                }
+            }
+        }
+
+        function updateNodeColor(nodeId, available, nodeType) {
+            const node = document.getElementById(nodeId);
+            if (node) {
+                if (!available) {
+                    // Unavailable - red
+                    node.style.background = '#dc2626';
+                } else if (nodeType === 'container') {
+                    // Container - purple-blue
+                    node.style.background = '#523bf6';
+                } else {
+                    // VM - blue
+                    node.style.background = '#3b82f6';
+                }
+            }
+        }
+
+        function loadNodesInfo() {
+            // Frontend is always available if page loaded
+            const frontendHost = window.location.hostname || 'unknown';
+            const frontendType = detectFrontendType();
+            const frontendDisplayName = formatNodeName(frontendType, frontendHost);
+            renderNodeContent('frontend-name', frontendDisplayName);
+            updateNodeColor('frontend-node', true, frontendType);
+
+            fetch(`${backendUrl}/nodes`)
+                .then(response => response.json())
+                .then(data => {
+                    // Backend - always VM, display type + hostname
+                    const backendHost = data.backend.hostname;
+                    const backendType = data.backend.type || 'vm';
+                    const backendDisplayName = formatNodeName(backendType, backendHost);
+                    renderNodeContent('backend-name', backendDisplayName);
+                    updateNodeColor('backend-node', data.backend.available, backendType);
+
+                    // Database - always VM, display type + hostname
+                    const dbHost = data.database.hostname;
+                    const dbType = data.database.type || 'vm';
+                    const dbDisplayName = formatNodeName(dbType, dbHost);
+                    renderNodeContent('db-name', dbDisplayName);
+                    updateNodeColor('db-node', data.database.available, dbType);
+                })
+                .catch(error => {
+                    console.error('Error fetching nodes info:', error);
+                    // For backend and db, show as unavailable
+                    renderNodeContent('backend-name', formatNodeName('vm', 'unknown'));
+                    renderNodeContent('db-name', formatNodeName('vm', 'unknown'));
+                    updateNodeColor('backend-node', false, 'vm');
+                    updateNodeColor('db-node', false, 'vm');
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
-            const title = params.get('title') || '%%HEADER_TITLE%%';
+            const title = params.get('title') || 'Three-Tier Application Demo';
             document.getElementById('header').textContent = title;
 
+            loadNodesInfo();
             fetchData();
+
+            // Show table section after initial load
+            setTimeout(() => {
+                const table = document.querySelector('.table');
+                if (table) {
+                    table.classList.add('loaded');
+                }
+            }, 50);
         });
     </script>
 </body>

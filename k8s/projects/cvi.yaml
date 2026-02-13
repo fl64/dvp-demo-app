@@ -2,9 +2,9 @@
 apiVersion: virtualization.deckhouse.io/v1alpha2
 kind: ClusterVirtualImage
 metadata:
-  name: demo-alpine-3-23
+  name: demo-alpine
 spec:
   dataSource:
     type: ContainerImage
     containerImage:
-      image: fl64/alpine-3-23-uefi-base:latest
+      image: fl64/alpine-3-21-uefi-base:latest

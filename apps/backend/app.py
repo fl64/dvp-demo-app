@@ -3,6 +3,7 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import psycopg2
 import os
+import socket
 
 load_dotenv(dotenv_path='/app/.env')
 
@@ -73,6 +74,68 @@ def delete_data(id):
         cur.close()
         conn.close()
         return jsonify({"message": f"Record with ID {id} deleted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    try:
+        # Get current node information (backend)
+        backend_hostname = socket.gethostname()
+        backend_ip = None
+        try:
+            # Try to get IP via connection to external address
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            backend_ip = s.getsockname()[0]
+            s.close()
+        except:
+            try:
+                backend_ip = socket.gethostbyname(backend_hostname)
+            except:
+                pass
+
+        # Check database availability
+        db_available = False
+        try:
+            conn = get_db_connection()
+            conn.close()
+            db_available = True
+        except:
+            pass
+
+        # Backend is always VM (from k8s structure)
+        backend_type = 'vm'
+
+        # Frontend can be pod or VM - determine by environment variable or hostname
+        frontend_hostname = request.headers.get('Host', 'unknown')
+        frontend_type = os.getenv('FRONTEND_TYPE', '').lower()
+        if not frontend_type:
+            # Try to determine by hostname or other indicators
+            # If hostname contains typical pod indicators (e.g., contains dashes and digits)
+            if '-' in frontend_hostname and any(c.isdigit() for c in frontend_hostname):
+                frontend_type = 'container'
+            else:
+                frontend_type = 'vm'
+
+        return jsonify({
+            'frontend': {
+                'hostname': frontend_hostname,
+                'type': frontend_type,
+                'available': True
+            },
+            'backend': {
+                'hostname': backend_hostname,
+                'ip': backend_ip or backend_hostname,
+                'type': backend_type,
+                'available': True  # If endpoint responds, it's available
+            },
+            'database': {
+                'hostname': DB_HOST,
+                'type': 'vm',  # DB is always VM
+                'available': db_available
+            }
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
