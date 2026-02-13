@@ -2,6 +2,11 @@
 
 version: "3"
 
+includes:
+  ssh: Taskfile.ssh.yml
+  argocd: Taskfile.argocd.yml
+  ansible: Taskfile.ansible.yml
+
 dotenv:
 - .env
 
@@ -111,48 +116,6 @@ tasks:
     cmds:
       - kubectl delete -k ./k8s || true
       - kubectl delete -k ./k8s/projects || true
-
-  argocd-apply:
-    desc: Apply ArgoCD ApplicationSet manifests
-    cmds:
-      - kubectl apply -f argocd/projects-appset.yaml
-      - kubectl apply -f argocd/apps-appset.yaml
-
-  argocd-delete:
-    desc: Delete ArgoCD ApplicationSet manifests
-    cmds:
-      - kubectl delete -f argocd/apps-appset.yaml || true
-      - kubectl delete -f argocd/projects-appset.yaml || true
-
-  uptime:
-    desc: Check VM's uptime via ansible
-    cmds:
-      - ansible -m shell -a "uptime" -i inventory.yaml all
- 
-  ansible-update:
-    desc: Update packages on all VMs via Ansible
-    cmds:
-      - ansible-playbook ansible/update-packages.yml --diff
- 
-  ansible-security-check:
-    desc: Run security checks on all VMs via Ansible
-    cmds:
-      - ansible-playbook ansible/security-check.yml --check --diff
- 
-  ssh-to-frontend:
-    desc: SSH to frontend VM
-    cmds:
-      - ssh -vvvvv -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true frontend.demo-app 22' cloud@frontend-0
-
-  ssh-to-backend-a:
-    desc: SSH to backend VM
-    cmds:
-      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-a.demo-app 22' cloud@backend-0
-
-  ssh-to-backend-b:
-    desc: SSH to backend VM
-    cmds:
-      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-b.demo-app 22' cloud@backend-b
 
   kill-vms:
     desc: Kill VM

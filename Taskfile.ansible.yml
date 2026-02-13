@@ -1,0 +1,26 @@
+# https://taskfile.dev
+# Ansible tasks for VM management
+
+version: "3"
+
+tasks:
+  uptime:
+    desc: Check VM's uptime via ansible
+    cmds:
+      - ansible all -m shell -a "uptime"
+
+  update:
+    desc: Update packages on all VMs via Ansible
+    cmds:
+      - ansible-playbook ansible/update-packages.yml --diff
+
+  security-check:
+    desc: Run security checks on all VMs via Ansible
+    cmds:
+      - ansible-playbook ansible/security-check.yml --check --diff
+
+  all:
+    desc: Run all Ansible tasks (update + security check)
+    cmds:
+      - task: ansible:update
+      - task: ansible:security-check

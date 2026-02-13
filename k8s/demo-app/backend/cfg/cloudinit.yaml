@@ -21,6 +21,8 @@ runcmd:
   - curl https://raw.githubusercontent.com/fl64/dvp-demo-app/master/apps/backend/app.py > /app/app.py
   - rc-update add flask-app default
   - rc-service flask-app start
+  - rc-update add chronyd default
+  - rc-service chronyd start
   - curl -L https://github.com/pouriyajamshidi/tcping/releases/download/v2.7.1/tcping-linux-amd64-static.tar.gz  | tar -xz -C /usr/local/bin/ tcping
 write_files:
   - path: /etc/init.d/flask-app

@@ -9,4 +9,4 @@ spec:
     type: ObjectRef
     objectRef:
       kind: ClusterVirtualImage
-      name: demo-alpine-3-21
+      name: demo-alpine-3-23

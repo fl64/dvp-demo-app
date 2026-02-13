@@ -1,0 +1,17 @@
+# https://taskfile.dev
+# ArgoCD tasks for managing ApplicationSets
+
+version: "3"
+
+tasks:
+  apply:
+    desc: Apply ArgoCD ApplicationSet manifests
+    cmds:
+      - kubectl apply -f argocd/projects-appset.yaml
+      - kubectl apply -f argocd/apps-appset.yaml
+
+  delete:
+    desc: Delete ArgoCD ApplicationSet manifests
+    cmds:
+      - kubectl delete -f argocd/apps-appset.yaml || true
+      - kubectl delete -f argocd/projects-appset.yaml || true

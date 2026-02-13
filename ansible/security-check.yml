@@ -3,140 +3,307 @@
   hosts: all
   become: yes
   gather_facts: yes
-  
+
   tasks:
-    - name: Check for security updates
-      command: apk list --upgradable
-      register: security_updates
-      changed_when: false
-      when: ansible_os_family == "Alpine"
-    
-    - name: Display security updates count
-      debug:
-        msg: "{{ inventory_hostname }}: Security updates available - {{ security_updates.stdout_lines | length }}"
-      when: ansible_os_family == "Alpine"
-    
-    - name: Check SSH configuration file exists
-      stat:
-        path: /etc/ssh/sshd_config
-      register: ssh_config
-    
-    - name: Verify SSH config permissions
-      file:
-        path: /etc/ssh/sshd_config
-        mode: '0600'
-        owner: root
-        group: root
-      when: ssh_config.stat.exists
-      register: ssh_config_fixed
-    
-    - name: Report SSH config permissions fix
-      debug:
-        msg: "{{ inventory_hostname }}: Fixed SSH config permissions"
-      when: ssh_config_fixed.changed
-    
-    - name: Check if root login is disabled
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?PermitRootLogin'
-        line: 'PermitRootLogin no'
-        state: present
-        backup: yes
-      register: ssh_root_login
-      when: ssh_config.stat.exists
-    
-    - name: Report SSH root login disabled
-      debug:
-        msg: "{{ inventory_hostname }}: Disabled root login via SSH"
-      when: ssh_root_login.changed
-    
-    - name: Check SSH authorized_keys permissions
-      stat:
-        path: /home/{{ ansible_user }}/.ssh/authorized_keys
-      register: authorized_keys
-      when: ansible_user is defined
-    
-    - name: Fix authorized_keys permissions
-      file:
-        path: /home/{{ ansible_user }}/.ssh/authorized_keys
-        mode: '0600'
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-      when: authorized_keys.stat.exists
-      register: auth_keys_fixed
-    
-    - name: Report authorized_keys permissions fix
-      debug:
-        msg: "{{ inventory_hostname }}: Fixed authorized_keys permissions"
-      when: auth_keys_fixed.changed
-    
-    - name: Check listening ports
-      command: netstat -tuln
-      register: listening_ports
-      changed_when: false
-      failed_when: false
-    
-    - name: Display listening ports
-      debug:
-        msg: "{{ inventory_hostname }} listening ports: {{ listening_ports.stdout_lines }}"
-      when: listening_ports.rc == 0
-    
-    - name: Check running services
-      command: rc-status
-      register: running_services
-      changed_when: false
-      failed_when: false
-    
-    - name: Display running services
-      debug:
-        msg: "{{ inventory_hostname }} running services: {{ running_services.stdout_lines }}"
-      when: running_services.rc == 0
-    
-    - name: Check disk usage
-      command: df -h
-      register: disk_usage
-      changed_when: false
-    
-    - name: Display disk usage
-      debug:
-        msg: "{{ inventory_hostname }} disk usage:"
-      when: disk_usage.rc == 0
-    
-    - name: Show disk usage details
-      debug:
-        var: disk_usage.stdout_lines
-      when: disk_usage.rc == 0
-    
-    - name: Check for world-writable files in critical directories
-      command: find /etc /usr /var -type f -perm -002 2>/dev/null | head -20
-      register: world_writable
-      changed_when: false
-      failed_when: false
-    
-    - name: Display world-writable files warning
-      debug:
-        msg: "{{ inventory_hostname }}: Found {{ world_writable.stdout_lines | length }} world-writable files"
-      when: 
-        - world_writable.rc == 0
-        - world_writable.stdout_lines | length > 0
-    
-    - name: Show world-writable files
-      debug:
-        var: world_writable.stdout_lines
-      when:
-        - world_writable.rc == 0
-        - world_writable.stdout_lines | length > 0
-        - world_writable.stdout_lines | length <= 10
-    
-    - name: Check system uptime
-      command: uptime
-      register: uptime_info
-      changed_when: false
-    
-    - name: Display system uptime
-      debug:
-        msg: "{{ inventory_hostname }}: {{ uptime_info.stdout }}"
-    
-    - name: Security check summary
-      debug:
-        msg: "{{ inventory_hostname }}: Security check completed"
+    - name: Security updates check
+      block:
+        - name: Check for security updates
+          command: apk list --upgradable
+          register: security_updates
+          changed_when: false
+          check_mode: no
+          when: ansible_os_family == "Alpine"
+
+        - name: Display security updates
+          debug:
+            msg: "{{ inventory_hostname }}: Security updates available - {{ security_updates.stdout_lines | length | default(0) }}"
+          when: ansible_os_family == "Alpine"
+
+    - name: SSH security checks
+      block:
+        - name: Check SSH configuration file exists
+          stat:
+            path: /etc/ssh/sshd_config
+          register: ssh_config
+
+        - name: Verify SSH config permissions
+          file:
+            path: /etc/ssh/sshd_config
+            mode: '0600'
+            owner: root
+            group: root
+          when: ssh_config.stat.exists
+          register: ssh_config_fixed
+
+        - name: Assert SSH config permissions
+          block:
+            - name: Check SSH config permissions
+              ansible.builtin.assert:
+                that:
+                  - ssh_config.stat.exists
+                  - ssh_config.stat.mode == '0600'
+                fail_msg: "{{ inventory_hostname }}: ✗ SSH config has incorrect permissions"
+                success_msg: "{{ inventory_hostname }}: ✓ SSH config permissions OK"
+          rescue:
+            - name: Report SSH config permission issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ SSH config has incorrect permissions"
+          when: ssh_config.stat.exists
+
+        - name: Check if root login is disabled
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            regexp: '^#?PermitRootLogin'
+            line: 'PermitRootLogin no'
+            state: present
+            backup: yes
+          register: ssh_root_login
+          when: ssh_config.stat.exists
+
+        - name: Verify root login is disabled
+          command: grep -E '^PermitRootLogin\s+no' /etc/ssh/sshd_config
+          register: root_login_check
+          changed_when: false
+          failed_when: false
+          check_mode: no
+          when: ssh_config.stat.exists
+
+        - name: Assert root login is disabled
+          block:
+            - name: Check root login is disabled
+              ansible.builtin.assert:
+                that:
+                  - ssh_config.stat.exists
+                  - root_login_check.rc == 0
+                fail_msg: "{{ inventory_hostname }}: ✗ Root login may be enabled"
+                success_msg: "{{ inventory_hostname }}: ✓ Root login disabled"
+          rescue:
+            - name: Report root login issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ Root login may be enabled"
+          when: ssh_config.stat.exists
+
+        - name: Check SSH authorized_keys permissions
+          stat:
+            path: /home/{{ ansible_user }}/.ssh/authorized_keys
+          register: authorized_keys
+          when: ansible_user is defined
+
+        - name: Fix authorized_keys permissions
+          file:
+            path: /home/{{ ansible_user }}/.ssh/authorized_keys
+            mode: '0600'
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+          when: authorized_keys.stat.exists
+          register: auth_keys_fixed
+
+        - name: Assert authorized_keys permissions
+          block:
+            - name: Check authorized_keys permissions
+              ansible.builtin.assert:
+                that:
+                  - authorized_keys.stat.exists | default(false)
+                  - authorized_keys.stat.mode == '0600'
+                fail_msg: "{{ inventory_hostname }}: ✗ authorized_keys has incorrect permissions"
+                success_msg: "{{ inventory_hostname }}: ✓ authorized_keys permissions OK"
+          rescue:
+            - name: Report authorized_keys permission issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ authorized_keys has incorrect permissions"
+          when:
+            - ansible_user is defined
+            - authorized_keys.stat.exists | default(false)
+
+        - name: Check SSH .ssh directory permissions
+          stat:
+            path: /home/{{ ansible_user }}/.ssh
+          register: ssh_dir
+          when: ansible_user is defined
+
+        - name: Fix SSH .ssh directory permissions
+          file:
+            path: /home/{{ ansible_user }}/.ssh
+            mode: '0700'
+            owner: "{{ ansible_user }}"
+            group: "{{ ansible_user }}"
+          when:
+            - ansible_user is defined
+            - ssh_dir.stat.exists
+          register: ssh_dir_fixed
+
+        - name: Assert SSH .ssh directory permissions
+          block:
+            - name: Check SSH .ssh directory permissions
+              ansible.builtin.assert:
+                that:
+                  - ssh_dir.stat.exists | default(false)
+                  - ssh_dir.stat.mode == '0700'
+                fail_msg: "{{ inventory_hostname }}: ✗ .ssh directory has incorrect permissions"
+                success_msg: "{{ inventory_hostname }}: ✓ .ssh directory permissions OK"
+          rescue:
+            - name: Report SSH .ssh directory permission issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ .ssh directory has incorrect permissions"
+          when:
+            - ansible_user is defined
+            - ssh_dir.stat.exists | default(false)
+
+        - name: Check password authentication is disabled
+          command: grep -E '^PasswordAuthentication\s+no' /etc/ssh/sshd_config
+          register: password_auth_check
+          changed_when: false
+          failed_when: false
+          check_mode: no
+          when: ssh_config.stat.exists
+
+        - name: Assert password authentication is disabled
+          block:
+            - name: Check password authentication is disabled
+              ansible.builtin.assert:
+                that:
+                  - ssh_config.stat.exists
+                  - password_auth_check.rc == 0
+                fail_msg: "{{ inventory_hostname }}: ✗ Password authentication may be enabled"
+                success_msg: "{{ inventory_hostname }}: ✓ Password authentication disabled"
+          rescue:
+            - name: Report password authentication issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ Password authentication may be enabled"
+          when: ssh_config.stat.exists
+
+        - name: Check empty passwords are disabled
+          command: grep -E '^PermitEmptyPasswords\s+no' /etc/ssh/sshd_config
+          register: empty_passwords_check
+          changed_when: false
+          failed_when: false
+          check_mode: no
+          when: ssh_config.stat.exists
+
+        - name: Assert empty passwords are disabled
+          block:
+            - name: Check empty passwords are disabled
+              ansible.builtin.assert:
+                that:
+                  - ssh_config.stat.exists
+                  - empty_passwords_check.rc == 0
+                fail_msg: "{{ inventory_hostname }}: ✗ Empty passwords may be allowed"
+                success_msg: "{{ inventory_hostname }}: ✓ Empty passwords disabled"
+          rescue:
+            - name: Report empty passwords issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ Empty passwords may be allowed"
+          when: ssh_config.stat.exists
+
+        - name: Check SSH protocol version
+          command: grep -E '^Protocol\s+2' /etc/ssh/sshd_config
+          register: ssh_protocol_check
+          changed_when: false
+          failed_when: false
+          check_mode: no
+          when: ssh_config.stat.exists
+
+        - name: Assert SSH protocol version 2
+          block:
+            - name: Check SSH protocol version 2
+              ansible.builtin.assert:
+                that:
+                  - ssh_config.stat.exists
+                  - ssh_protocol_check.rc == 0
+                fail_msg: "{{ inventory_hostname }}: ✗ SSH protocol may not be v2"
+                success_msg: "{{ inventory_hostname }}: ✓ SSH protocol v2"
+          rescue:
+            - name: Report SSH protocol issue
+              debug:
+                msg: "{{ inventory_hostname }}: ✗ SSH protocol may not be v2"
+          when: ssh_config.stat.exists
+
+    - name: System information
+      block:
+        - name: Get system information
+          shell: |
+            echo "=== LISTENING PORTS ==="
+            netstat -tuln 2>/dev/null || echo "N/A"
+            echo "=== RUNNING SERVICES ==="
+            rc-status 2>/dev/null || echo "N/A"
+            echo "=== DISK USAGE ==="
+            df -h
+            echo "=== UPTIME ==="
+            uptime
+          register: system_info
+          changed_when: false
+          check_mode: no
+
+        - name: Display system information
+          debug:
+            msg: "{{ [inventory_hostname + ' System Info:'] + system_info.stdout_lines }}"
+
+    - name: File permissions check
+      block:
+        - name: Check for world-writable files in critical directories
+          command: find /etc /usr /var -type f -perm -002 2>/dev/null | head -20
+          register: world_writable
+          changed_when: false
+          failed_when: false
+          check_mode: no
+
+        - name: Report world-writable files status
+          debug:
+            msg: |
+              {% if world_writable.rc == 0 and world_writable.stdout_lines | length == 0 %}
+              {{ inventory_hostname }}: ✓ No world-writable files found
+              {% elif world_writable.rc == 0 and world_writable.stdout_lines | length > 0 %}
+              {{ inventory_hostname }}: ✗ Found {{ world_writable.stdout_lines | length }} world-writable files in critical directories
+              {% else %}
+              {{ inventory_hostname }}: ✗ Check for world-writable files failed
+              {% endif %}
+
+        - name: Display world-writable files list
+          debug:
+            var: world_writable.stdout_lines
+          when:
+            - world_writable.rc == 0
+            - world_writable.stdout_lines | length > 0
+            - world_writable.stdout_lines | length <= 10
+
+    - name: Network configuration
+      block:
+        - name: Check if chronyd is running
+          command: pgrep -x chronyd
+          register: chronyd_running
+          changed_when: false
+          failed_when: false
+          check_mode: no
+
+        - name: Get NTP sources
+          command: chronyc sources
+          register: ntp_sources
+          changed_when: false
+          failed_when: false
+          check_mode: no
+          when: chronyd_running.rc == 0
+
+        - name: Display network configuration
+          debug:
+            msg:
+              - "{{ inventory_hostname }} Network:"
+              - "  IP: {{ ansible_all_ipv4_addresses | join(', ') }}"
+              - "  Gateway: {{ ansible_default_ipv4.gateway | default('N/A') }}"
+              - "  DNS: {{ ansible_dns.nameservers | join(', ') | default('N/A') }}"
+              - "  NTP: {{ 'Running' if (chronyd_running.rc == 0) else 'Not running' }}"
+
+        - name: Display NTP sources header
+          debug:
+            msg: "{{ inventory_hostname }} NTP Sources:"
+          when:
+            - chronyd_running.rc == 0
+            - ntp_sources.stdout is defined
+            - ntp_sources.stdout_lines | length > 2
+
+        - name: Display NTP sources list
+          debug:
+            var: ntp_sources.stdout_lines
+          when:
+            - chronyd_running.rc == 0
+            - ntp_sources.stdout is defined
+            - ntp_sources.stdout_lines | length > 2

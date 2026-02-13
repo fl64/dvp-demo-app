@@ -1,0 +1,25 @@
+# https://taskfile.dev
+# SSH tasks for connecting to VMs
+
+version: "3"
+
+tasks:
+  frontend:
+    desc: SSH to frontend VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true frontend.demo-app 22' cloud@frontend-0
+
+  backend-a:
+    desc: SSH to backend-a VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-a.demo-app 22' cloud@backend-0
+
+  backend-b:
+    desc: SSH to backend-b VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true backend-b.demo-app 22' cloud@backend-b
+
+  db:
+    desc: SSH to database VM
+    cmds:
+      - ssh -i {{ .SSH_PRIV_KEY_FILE }} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand=d8 v port-forward --stdio=true db.demo-db 22' cloud@db-0

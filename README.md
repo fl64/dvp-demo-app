@@ -63,6 +63,7 @@ Ensure the following d8 modules are enabled and configured:
 - [task](https://taskfile.dev)
 - [yq](https://github.com/mikefarah/yq)
 - [ansible](https://docs.ansible.com/ansible/latest/index.html)
+- [d8](https://github.com/deckhouse/deckhouse-cli) (v0.27.0+ for ansible-inventory support)
 
 ## Installation
 
@@ -98,8 +99,7 @@ task undeploy
 1. Apply the ApplicationSet:
 
 ```bash
-kubectl apply -f argocd/apps-appset.yaml
-kubectl apply -f argocd/projects-appset.yaml
+task argocd:apply
 ```
 
 2. ArgoCD will automatically create and sync applications for `demo-app` and `demo-db` namespaces.
@@ -107,20 +107,48 @@ kubectl apply -f argocd/projects-appset.yaml
 3. To remove, delete the ApplicationSet:
 
 ```bash
-kubectl delete -f argocd/apps-appset.yaml
-kubectl delete -f argocd/projects-appset.yaml
+task argocd:delete
 ```
 
 ## How to connect to VM
 
-Via SSH
+### Via Task (SSH)
 
+```bash
+task ssh:frontend    # Connect to frontend VM
+task ssh:backend-a   # Connect to backend-a VM
+task ssh:backend-b   # Connect to backend-b VM
+task ssh:db          # Connect to database VM
+```
+
+### Via d8 CLI
+
+**SSH:**
 ```bash
 d8 v ssh -n demo-app cloud@<vmname> -i ./tmp/demo --local-ssh
 ```
 
-Via console
-
+**Console:**
 ```bash
 d8 v console -n demo-app <vmname>
 ```
+
+## Ansible Management
+
+The project includes Ansible playbooks for automated VM management. Uses `d8 v ansible-inventory` for dynamic inventory discovery.
+
+**Check VM uptime:**
+```bash
+task ansible:uptime
+```
+
+**Update packages on all VMs:**
+```bash
+task ansible:update
+```
+
+**Run security checks:**
+```bash
+task ansible:security-check
+```
+
