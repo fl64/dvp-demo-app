@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: dvp-demo-apps
+  name: demo-apps
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
@@ -13,7 +13,7 @@ spec:
           - name: demo-db
   template:
     metadata:
-      name: '{{name}}-app'
+      name: '{{name}}'
       annotations:
         argocd.argoproj.io/sync-wave: "1"
       labels:

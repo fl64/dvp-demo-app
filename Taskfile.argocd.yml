@@ -7,11 +7,11 @@ tasks:
   apply:
     desc: Apply ArgoCD ApplicationSet manifests
     cmds:
-      - kubectl apply -f argocd/projects-appset.yaml
-      - kubectl apply -f argocd/apps-appset.yaml
+      - kubectl apply -f argocd/projects.yaml
+      - kubectl apply -f argocd/apps.yaml
 
   delete:
     desc: Delete ArgoCD ApplicationSet manifests
     cmds:
-      - kubectl delete -f argocd/apps-appset.yaml || true
-      - kubectl delete -f argocd/projects-appset.yaml || true
+      - kubectl delete -f argocd/apps.yaml || true
+      - kubectl delete -f argocd/projects.yaml || true
